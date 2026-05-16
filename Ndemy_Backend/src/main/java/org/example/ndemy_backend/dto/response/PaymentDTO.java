@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -11,10 +12,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PaymentDTO {
 
-    private Long id;
-    private Long studentId;
+    private UUID id;
+    private UUID studentId;
     private String studentName;
-    private Long courseId;
+    private UUID courseId;
     private String courseTitle;
     private BigDecimal amount;
     private String couponCode;
