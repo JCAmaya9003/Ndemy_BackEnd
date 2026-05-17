@@ -3,6 +3,7 @@ package org.example.ndemy_backend.dto.response;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -10,9 +11,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReviewDTO {
 
-    private Long id;
-    private Long courseId;
-    private Long studentId;
+    private UUID id;
+    private UUID courseId;
+    private UUID studentId;
     private String studentName;
     private Integer rating;
     private String comment;

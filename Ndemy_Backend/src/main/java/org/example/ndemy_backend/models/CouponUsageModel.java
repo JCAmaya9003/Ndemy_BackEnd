@@ -9,11 +9,11 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "reviews",
+        name = "coupon_usage",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_reviews_student_course",
-                        columnNames = {"student_id", "course_id"}
+                        name = "uk_coupon_usage_coupon_user",
+                        columnNames = {"coupon_id", "user_id"}
                 )
         }
 )
@@ -21,32 +21,27 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewModel {
+public class CouponUsageModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    //dara error hasta crear clase User
-    /*@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id", nullable = false)
+    private CouponModel coupon;
 
-    //dara errir hasta crear clase Course
+    //se activara una vez exista la clase User y Course
+    /*@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;*/
 
-    @Column(nullable = false)
-    private Integer rating;
-
-
-    @Column(columnDefinition = "TEXT")
-    private String comment;
-
-
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "used_at", nullable = false, updatable = false)
+    private LocalDateTime usedAt;
 }
