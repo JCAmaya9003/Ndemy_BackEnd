@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,30 +17,22 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "enrollments")
-public class Enrollment {
+@Table(name = "lesson_progress")
+public class LessonProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /*
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
-    private User student
-    */
+    @JoinColumn(name = "enrollment_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Enrollment enrollment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @JoinColumn(name = "lesson_id", nullable = false)
+    private Lesson lesson;
 
     @CreationTimestamp
-    @Column(name = "enrolled_at", nullable = false, updatable = false)
-    private LocalDateTime enrolledAt;
-
-    @Column(name = "is_active", nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
-
-    @Column(name = "completed_at")
+    @Column(name = "completed_at", nullable = false, updatable = false)
     private LocalDateTime completedAt;
 }
