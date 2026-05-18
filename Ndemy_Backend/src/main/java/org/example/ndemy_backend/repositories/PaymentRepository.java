@@ -25,4 +25,16 @@ public interface PaymentRepository extends JpaRepository<PaymentRecord, UUID> {
 
     @Query("SELECT SUM(p.amount) FROM PaymentRecord p WHERE p.status = 'COMPLETED'")
     BigDecimal findTotalPlatformRevenue();
+
+    @Query("SELECT p.course.id, p.course.title, p.course.instructor.name, SUM(p.amount), COUNT(p) " +
+            "FROM PaymentRecord p WHERE p.course.instructor.id = :instructorId AND p.status = 'COMPLETED' " +
+            "GROUP BY p.course.id, p.course.title, p.course.instructor.name")
+    List<Object[]> findCourseRevenueByInstructor(@Param("instructorId") UUID instructorId);
+
+    @Query("SELECT p.course.id, p.course.title, p.course.instructor.name, SUM(p.amount) " +
+            "FROM PaymentRecord p WHERE p.status = 'COMPLETED' " +
+            "GROUP BY p.course.id, p.course.title, p.course.instructor.name " +
+            "ORDER BY SUM(p.amount) DESC " +
+            "LIMIT 5")
+    List<Object[]> findTop5CoursesByRevenue();
 }
