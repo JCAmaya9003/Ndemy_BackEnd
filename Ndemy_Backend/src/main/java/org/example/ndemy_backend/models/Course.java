@@ -31,14 +31,14 @@ public class Course {
     @Builder.Default
     private BigDecimal price = BigDecimal.ZERO;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100)
     private String category;
 
-    @Column(nullable = false, name = "duration_hours")
-    private Integer duration;
+    @Column(name = "duration_hours")
+    private Integer durationHours;
 
     @Column(length = 500, name = "thumbnail_url")
-    private String thumbnail;
+    private String thumbnailUrl;
 
     @Column(nullable = false, name = "is_published")
     @Builder.Default
