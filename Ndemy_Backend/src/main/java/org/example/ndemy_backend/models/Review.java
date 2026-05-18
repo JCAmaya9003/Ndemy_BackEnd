@@ -9,10 +9,10 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "wishlist_items",
+        name = "reviews",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_wishlist_student_course",
+                        name = "uk_reviews_student_course",
                         columnNames = {"student_id", "course_id"}
                 )
         }
@@ -21,7 +21,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class WishlistItemModel {
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
@@ -35,7 +35,13 @@ public class WishlistItemModel {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @Column(nullable = false)
+    private Integer rating;
+
+    @Column(columnDefinition = "TEXT")
+    private String comment;
+
     @CreationTimestamp
-    @Column(name = "added_at", nullable = false, updatable = false)
-    private LocalDateTime addedAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

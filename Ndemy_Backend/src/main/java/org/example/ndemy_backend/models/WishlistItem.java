@@ -2,20 +2,26 @@ package org.example.ndemy_backend.models;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.ndemy_backend.models.enums.PaymentStatusModel;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "payment_records")
+@Table(
+        name = "wishlist_items",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_wishlist_student_course",
+                        columnNames = {"student_id", "course_id"}
+                )
+        }
+)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentRecordModel {
+public class WishlistItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
@@ -29,18 +35,7 @@ public class PaymentRecordModel {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amount;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id")
-    private CouponModel coupon;
-
     @CreationTimestamp
-    @Column(name = "paid_at", nullable = false, updatable = false)
-    private LocalDateTime paidAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private PaymentStatusModel status;
+    @Column(name = "added_at", nullable = false, updatable = false)
+    private LocalDateTime addedAt;
 }

@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.CouponRequest;
 import org.example.ndemy_backend.dto.response.CouponDTO;
 import org.example.ndemy_backend.exceptions.*;
-import org.example.ndemy_backend.models.CouponModel;
+import org.example.ndemy_backend.models.Coupon;
+import org.example.ndemy_backend.models.Course;
+import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.CouponRepository;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
 import org.example.ndemy_backend.services.CouponService;
@@ -32,7 +34,7 @@ public class CouponServiceImpl implements CouponService {
         User createdBy = new User();
         createdBy.setId(createdById);
 
-        CouponModel coupon = CouponModel.builder()
+        Coupon coupon = Coupon.builder()
                 .code(request.getCode())
                 .discountPercent(request.getDiscountPercent())
                 .maxUses(request.getMaxUses())
@@ -42,7 +44,7 @@ public class CouponServiceImpl implements CouponService {
                 .createdBy(createdBy)
                 .build();
 
-        CouponModel saved = couponRepository.save(coupon);
+        Coupon saved = couponRepository.save(coupon);
         return mapToDTO(saved);
     }
 
@@ -57,7 +59,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public CouponDTO updateCoupon(UUID couponId, CouponRequest request) {
-        CouponModel coupon = couponRepository.findById(couponId)
+        Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
 
         if (coupon.getCurrentUses() > 0) {
@@ -69,13 +71,13 @@ public class CouponServiceImpl implements CouponService {
         coupon.setMaxUses(request.getMaxUses());
         coupon.setExpiresAt(request.getExpiresAt());
 
-        CouponModel updated = couponRepository.save(coupon);
+        Coupon updated = couponRepository.save(coupon);
         return mapToDTO(updated);
     }
 
     @Override
     public void deactivateCoupon(UUID couponId) {
-        CouponModel coupon = couponRepository.findById(couponId)
+        Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
 
         coupon.setIsActive(false);
@@ -84,12 +86,14 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public BigDecimal applyCoupon(String code, UUID userId, UUID courseId) {
-        CouponModel coupon = validateAndGetCoupon(code, userId);
-        return calculateFinalPrice(courseId, coupon);
+        Coupon coupon = validateAndGetCoupon(code, userId);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
+        return calculateFinalPrice(course.getPrice(), coupon);
     }
 
-    public CouponModel validateAndGetCoupon(String code, UUID userId) {
-        CouponModel coupon = couponRepository.findByCode(code)
+    public Coupon validateAndGetCoupon(String code, UUID userId) {
+        Coupon coupon = couponRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
 
         if (!coupon.getIsActive()) {
@@ -111,14 +115,14 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
-    public BigDecimal calculateFinalPrice(BigDecimal originalPrice, CouponModel coupon) {
+    public BigDecimal calculateFinalPrice(BigDecimal originalPrice, Coupon coupon) {
         BigDecimal discount = BigDecimal.valueOf(coupon.getDiscountPercent())
                 .divide(BigDecimal.valueOf(100));
         BigDecimal discountAmount = originalPrice.multiply(discount);
         return originalPrice.subtract(discountAmount).setScale(2, RoundingMode.HALF_UP);
     }
 
-    private CouponDTO mapToDTO(CouponModel coupon) {
+    private CouponDTO mapToDTO(Coupon coupon) {
         return CouponDTO.builder()
                 .id(coupon.getId())
                 .code(coupon.getCode())

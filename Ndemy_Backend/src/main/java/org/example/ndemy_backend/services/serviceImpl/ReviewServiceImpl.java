@@ -6,7 +6,8 @@ import org.example.ndemy_backend.dto.response.ReviewDTO;
 import org.example.ndemy_backend.exceptions.AlreadyReviewedException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.Course;
-import org.example.ndemy_backend.models.ReviewModel;
+import org.example.ndemy_backend.models.Review;
+import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.ReviewRepository;
 import org.example.ndemy_backend.services.ReviewService;
 import org.springframework.stereotype.Service;
@@ -33,14 +34,14 @@ public class ReviewServiceImpl implements ReviewService {
         Course course = new Course();
         course.setId(courseId);
 
-        ReviewModel review = ReviewModel.builder()
+        Review review = Review.builder()
                 .student(student)
                 .course(course)
                 .rating(request.getRating())
                 .comment(request.getComment())
                 .build();
 
-        ReviewModel saved = reviewRepository.save(review);
+        Review saved = reviewRepository.save(review);
         return mapToDTO(saved);
     }
 
@@ -54,7 +55,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDTO updateReview(UUID reviewId, UUID studentId, ReviewRequest request) {
-        ReviewModel review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reseña no encontrada"));
 
         if (!review.getStudent().getId().equals(studentId)) {
@@ -64,13 +65,13 @@ public class ReviewServiceImpl implements ReviewService {
         review.setRating(request.getRating());
         review.setComment(request.getComment());
 
-        ReviewModel updated = reviewRepository.save(review);
+        Review updated = reviewRepository.save(review);
         return mapToDTO(updated);
     }
 
     @Override
     public void deleteReview(UUID reviewId, UUID requesterId, String requesterRole) {
-        ReviewModel review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reseña no encontrada"));
 
         boolean isAdmin = "ADMIN".equals(requesterRole);
@@ -83,7 +84,7 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.delete(review);
     }
 
-    private ReviewDTO mapToDTO(ReviewModel review) {
+    private ReviewDTO mapToDTO(Review review) {
         return ReviewDTO.builder()
                 .id(review.getId())
                 .courseId(review.getCourse().getId())
