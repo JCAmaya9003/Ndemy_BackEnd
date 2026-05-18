@@ -22,7 +22,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CouponUsageModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
@@ -32,14 +31,13 @@ public class CouponUsageModel {
     @JoinColumn(name = "coupon_id", nullable = false)
     private CouponModel coupon;
 
-    //se activara una vez exista la clase User y Course
-    /*@ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    private Course course;*/
+    private Course course;
 
     @CreationTimestamp
     @Column(name = "used_at", nullable = false, updatable = false)
