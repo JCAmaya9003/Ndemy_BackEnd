@@ -3,6 +3,7 @@ package org.example.ndemy_backend.services.serviceImpl;
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.response.AdminOverviewDTO;
 import org.example.ndemy_backend.dto.response.RevenueReportDTO;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.PaymentRepository;
 import org.example.ndemy_backend.services.ReportService;
 import org.springframework.stereotype.Service;
@@ -54,9 +55,9 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public AdminOverviewDTO getAdminOverview() {
 
-        Long totalStudents = userRepository.countByRole("STUDENT");
-        Long totalInstructors = userRepository.countByRole("INSTRUCTOR");
-        Long totalAdmins = userRepository.countByRole("ADMIN");
+        Long totalStudents = userRepository.countByRole(Role.STUDENT);
+        Long totalInstructors = userRepository.countByRole(Role.INSTRUCTOR);
+        Long totalAdmins = userRepository.countByRole(Role.ADMIN);
         Long totalPublishedCourses = courseRepository.countByIsPublishedTrue();
         Long totalActiveEnrollments = enrollmentRepository.countByIsActiveTrue();
         BigDecimal totalRevenue = paymentRepository.findTotalPlatformRevenue();

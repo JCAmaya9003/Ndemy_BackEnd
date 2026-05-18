@@ -9,11 +9,11 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "coupon_usage",
+        name = "wishlist_items",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_coupon_usage_coupon_user",
-                        columnNames = {"coupon_id", "user_id"}
+                        name = "uk_wishlist_student_course",
+                        columnNames = {"student_id", "course_id"}
                 )
         }
 )
@@ -21,27 +21,21 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CouponUsageModel {
-
+public class WishlistItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id", nullable = false)
-    private CouponModel coupon;
-
-    //se activara una vez exista la clase User y Course
-    /*@ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "student_id", nullable = false)
+    private User student;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
-    private Course course;*/
+    private Course course;
 
     @CreationTimestamp
-    @Column(name = "used_at", nullable = false, updatable = false)
-    private LocalDateTime usedAt;
+    @Column(name = "added_at", nullable = false, updatable = false)
+    private LocalDateTime addedAt;
 }

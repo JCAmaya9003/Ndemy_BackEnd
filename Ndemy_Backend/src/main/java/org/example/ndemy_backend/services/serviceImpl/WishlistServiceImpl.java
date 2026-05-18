@@ -3,7 +3,8 @@ package org.example.ndemy_backend.services.serviceImpl;
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.Course;
-import org.example.ndemy_backend.models.WishlistItemModel;
+import org.example.ndemy_backend.models.User;
+import org.example.ndemy_backend.models.WishlistItem;
 import org.example.ndemy_backend.repositories.WishlistItemRepository;
 import org.example.ndemy_backend.services.WishlistService;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class WishlistServiceImpl implements WishlistService {
         Course course = new Course();
         course.setId(courseId);
 
-        WishlistItemModel item = WishlistItemModel.builder()
+        WishlistItem item = WishlistItem.builder()
                 .student(student)
                 .course(course)
                 .build();
@@ -46,7 +47,7 @@ public class WishlistServiceImpl implements WishlistService {
 
     @Override
     public void removeFromWishlist(UUID studentId, UUID courseId) {
-        WishlistItemModel item = wishlistItemRepository
+        WishlistItem item = wishlistItemRepository
                 .findByStudentIdAndCourseId(studentId, courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("El curso no está en tu wishlist"));
 

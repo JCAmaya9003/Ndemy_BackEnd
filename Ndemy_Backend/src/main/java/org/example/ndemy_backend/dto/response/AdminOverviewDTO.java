@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -25,7 +26,7 @@ public class AdminOverviewDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CourseRankDTO {
-        private Long courseId;
+        private UUID courseId;
         private String courseTitle;
         private String instructorName;
         private Long enrollments;

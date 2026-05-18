@@ -12,8 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CouponModel {
-
+public class Coupon {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(updatable = false, nullable = false)
@@ -37,9 +36,8 @@ public class CouponModel {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    //se activara una vez exista la clase User
-   /* @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy;*/
+    private User createdBy;
 }
 

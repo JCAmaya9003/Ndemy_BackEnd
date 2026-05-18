@@ -1,6 +1,6 @@
 package org.example.ndemy_backend.models.enums;
 
-public enum PaymentStatusModel {
+public enum PaymentStatus {
     PENDING,
     COMPLETED,
     REFUNDED

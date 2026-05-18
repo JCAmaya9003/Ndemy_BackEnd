@@ -6,11 +6,8 @@ import org.example.ndemy_backend.dto.request.CheckoutRequest;
 import org.example.ndemy_backend.dto.response.PaymentDTO;
 import org.example.ndemy_backend.exceptions.AlreadyEnrolledException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
-import org.example.ndemy_backend.models.CouponModel;
-import org.example.ndemy_backend.models.CouponUsageModel;
-import org.example.ndemy_backend.models.Course;
-import org.example.ndemy_backend.models.PaymentRecordModel;
-import org.example.ndemy_backend.models.enums.PaymentStatusModel;
+import org.example.ndemy_backend.models.*;
+import org.example.ndemy_backend.models.enums.PaymentStatus;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
 import org.example.ndemy_backend.repositories.PaymentRepository;
 import org.example.ndemy_backend.services.PaymentService;
@@ -47,7 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         //calcular precio final (con o sin cupón)
         BigDecimal finalPrice = course.getPrice();
-        CouponModel couponUsed = null;
+        Coupon couponUsed = null;
 
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
             couponUsed = couponServiceImpl.validateAndGetCoupon(request.getCouponCode(), studentId);
@@ -58,23 +55,23 @@ public class PaymentServiceImpl implements PaymentService {
         User student = new User();
         student.setId(studentId);
 
-        PaymentRecordModel payment = PaymentRecordModel.builder()
+        PaymentRecord payment = PaymentRecord.builder()
                 .student(student)
                 .course(course)
                 .amount(finalPrice)
                 .coupon(couponUsed)
-                .status(PaymentStatusModel.PENDING)
+                .status(PaymentStatus.PENDING)
                 .build();
 
         paymentRepository.save(payment);
 
         //simular procesamiento del pago
-        payment.setStatus(PaymentStatusModel.COMPLETED);
-        PaymentRecordModel saved = paymentRepository.save(payment);
+        payment.setStatus(PaymentStatus.COMPLETED);
+        PaymentRecord saved = paymentRepository.save(payment);
 
         //registrar uso del cupon
         if (couponUsed != null) {
-            CouponUsageModel usage = CouponUsageModel.builder()
+            CouponUsage usage = CouponUsage.builder()
                     .coupon(couponUsed)
                     .user(student)
                     .course(course)
@@ -92,27 +89,27 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentDTO refund(UUID paymentId, UUID studentId) {
-        PaymentRecordModel payment = paymentRepository.findById(paymentId)
+        PaymentRecord payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
 
         if (!payment.getStudent().getId().equals(studentId)) {
             throw new ResourceNotFoundException("No tienes permiso para reembolsar este pago");
         }
 
-        if (!PaymentStatusModel.COMPLETED.equals(payment.getStatus())) {
+        if (!PaymentStatus.COMPLETED.equals(payment.getStatus())) {
             throw new ResourceNotFoundException("Solo se pueden reembolsar pagos completados");
         }
 
         //desactivar inscripción
         enrollmentService.deactivateEnrollment(studentId, payment.getCourse().getId());
 
-        payment.setStatus(PaymentStatusModel.REFUNDED);
-        PaymentRecordModel saved = paymentRepository.save(payment);
+        payment.setStatus(PaymentStatus.REFUNDED);
+        PaymentRecord saved = paymentRepository.save(payment);
 
         return mapToDTO(saved);
     }
 
-    private PaymentDTO mapToDTO(PaymentRecordModel payment) {
+    private PaymentDTO mapToDTO(PaymentRecord payment) {
         return PaymentDTO.builder()
                 .id(payment.getId())
                 .studentId(payment.getStudent().getId())
