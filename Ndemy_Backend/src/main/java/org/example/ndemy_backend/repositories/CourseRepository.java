@@ -31,4 +31,5 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             Pageable pageable
     );
 
+    Integer countByIsPublishedTrue();
 }
