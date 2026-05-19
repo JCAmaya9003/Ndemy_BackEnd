@@ -32,5 +32,5 @@ public class Certificate {
 
     @Column(name = "certificate_code", nullable = false, unique = true)
     // sera un UUID, en la capa de service se parseara a String
-    private String certificationCode;
+    private String certificateCode;
 }
