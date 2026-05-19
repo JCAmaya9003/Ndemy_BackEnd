@@ -33,5 +33,14 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
             Pageable pageable
     );
 
+    // usage in report service
     int countByIsPublishedTrue();
+
+    @Query("""
+    SELECT e.course FROM Enrollment e
+    GROUP BY e.course
+    ORDER BY COUNT(e) DESC
+    LIMIT 5
+    """)
+    List<Course> findTop5CoursesByEnrollment();
 }

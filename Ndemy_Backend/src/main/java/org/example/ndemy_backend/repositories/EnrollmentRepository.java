@@ -1,5 +1,6 @@
 package org.example.ndemy_backend.repositories;
 
+import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
     Optional<Enrollment> findByStudentIdAndCourseIdAndIsActiveTrue(UUID studentId, UUID courseId);
 
     List<Enrollment> findByStudentIdAndIsActiveTrue(UUID studentId);
+
+    // usage in report service
+    int countByIsActiveTrue();
 }
