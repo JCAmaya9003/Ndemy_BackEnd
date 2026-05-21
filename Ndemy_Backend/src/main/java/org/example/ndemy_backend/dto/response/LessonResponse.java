@@ -16,6 +16,6 @@ public class LessonResponse {
     private UUID id;
     private String title;
     private ContentType contentType;
-    private Integer oderIndex;
+    private Integer orderIndex;
     private String contentUrl;
 }
