@@ -24,8 +24,8 @@ public class LessonServiceImpl implements LessonService {
     private final ModuleRepository moduleRepository;
 
     public LessonResponse createLesson(UUID moduleId, LessonRequest request, UUID instructorId) {
-        Module module = moduleRepository.findById(moduleId).
-                orElseThrow(() -> new ResourceNotFoundException("Module not found"));
+        Module module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Module not found"));
 
         verifyOwnership(module.getCourse(), instructorId);
 
@@ -58,9 +58,8 @@ public class LessonServiceImpl implements LessonService {
     }
 
     public LessonResponse updateLesson(UUID lessonId, LessonRequest request, UUID instructorId) {
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(
-                () -> new ResourceNotFoundException("Lesson not found")
-        );
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
         verifyOwnership(lesson.getModule().getCourse(), instructorId);
 
@@ -91,9 +90,8 @@ public class LessonServiceImpl implements LessonService {
     }
 
     public void deleteLesson(UUID lessonId, UUID instructorId) {
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(
-                () -> new ResourceNotFoundException("Lesson not found")
-        );
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
         verifyOwnership(lesson.getModule().getCourse(), instructorId);
 

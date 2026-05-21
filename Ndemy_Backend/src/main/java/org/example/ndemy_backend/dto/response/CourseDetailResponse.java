@@ -25,6 +25,6 @@ public class CourseDetailResponse {
     private String thumbnailUrl;
     private Boolean isPublished;
     private String instructorName;
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
     private List<ModuleResponse> modules;
 }
