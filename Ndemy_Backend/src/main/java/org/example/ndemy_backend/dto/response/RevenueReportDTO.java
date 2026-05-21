@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -20,7 +21,7 @@ public class RevenueReportDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CourseRevenueDTO {
-        private Long courseId;
+        private UUID courseId;
         private String courseTitle;
         private BigDecimal revenue;
         private Integer studentsPaid;

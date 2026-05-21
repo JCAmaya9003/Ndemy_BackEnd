@@ -1,17 +1,19 @@
 package org.example.ndemy_backend.repositories;
 
-import org.example.ndemy_backend.models.WishlistItemModel;
+import org.example.ndemy_backend.models.WishlistItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface WishlistItemRepository extends JpaRepository<WishlistItemModel, UUID> {
+@Repository
+public interface WishlistItemRepository extends JpaRepository<WishlistItem, UUID> {
 
-    List<WishlistItemModel> findByStudentId(UUID studentId);
+    List<WishlistItem> findByStudentId(UUID studentId);
 
-    Optional<WishlistItemModel> findByStudentIdAndCourseId(UUID studentId, UUID courseId);
+    Optional<WishlistItem> findByStudentIdAndCourseId(UUID studentId, UUID courseId);
 
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
 }

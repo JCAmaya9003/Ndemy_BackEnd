@@ -1,14 +1,16 @@
 package org.example.ndemy_backend.repositories;
 
-import org.example.ndemy_backend.models.CouponModel;
+import org.example.ndemy_backend.models.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CouponRepository extends JpaRepository<CouponModel, UUID> {
+@Repository
+public interface CouponRepository extends JpaRepository<Coupon, UUID> {
 
-    Optional<CouponModel> findByCode(String code);
+    Optional<Coupon> findByCode(String code);
 
     boolean existsByCode(String code);
 }

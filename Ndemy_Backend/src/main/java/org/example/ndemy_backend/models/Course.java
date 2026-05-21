@@ -44,12 +44,9 @@ public class Course {
     @Builder.Default
     private Boolean isPublished = false;
 
-    //se activara cuándo exista clase User
-    /*
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;
-     */
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false, name = "created_at")
