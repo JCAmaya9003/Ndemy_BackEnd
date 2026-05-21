@@ -102,7 +102,7 @@ public class ModuleServiceImpl implements ModuleService {
         return moduleRepository.findByCourseIdOrderByOrderIndexAsc(courseId)
                 .stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
