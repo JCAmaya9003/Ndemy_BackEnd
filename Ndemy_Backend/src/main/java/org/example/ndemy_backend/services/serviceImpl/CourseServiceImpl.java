@@ -11,10 +11,9 @@ import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Lesson;
 import org.example.ndemy_backend.models.Module;
-import org.example.ndemy_backend.repositories.CourseRepository;
-import org.example.ndemy_backend.repositories.EnrollmentRepository;
-import org.example.ndemy_backend.repositories.LessonRepository;
-import org.example.ndemy_backend.repositories.ModuleRepository;
+import org.example.ndemy_backend.models.User;
+import org.example.ndemy_backend.models.enums.Role;
+import org.example.ndemy_backend.repositories.*;
 import org.example.ndemy_backend.services.CourseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,15 +30,12 @@ public class CourseServiceImpl implements CourseService {
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
     private final EnrollmentRepository enrollmentRepository;
-    // when the user repository is ready, uncomment this
-    // private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
-        /* when the user repository is ready, uncomment this
         User instructor = userRepository.findById(instructorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
-         */
 
         Course course = Course
                 .builder()
@@ -50,7 +46,7 @@ public class CourseServiceImpl implements CourseService {
                 .durationHours(request.getDurationHours())
                 .thumbnailUrl(request.getThumbnailUrl())
                 .isPublished(false)
-                // .instructor(instructor) // when the user repository is ready, uncomment this
+                .instructor(instructor)
                 .build();
 
         return toCourseDetailResponse(courseRepository.save(course));
@@ -96,7 +92,6 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        /* when the user repository is ready, uncomment this
         User user = userRepository.findById(instructorId)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -105,7 +100,6 @@ public class CourseServiceImpl implements CourseService {
                 && user.getRole() != Role.ADMIN) {
             throw new UnauthorizedException("You are not allowed to delete this course");
         }
-        */
 
         courseRepository.delete(course);
     }
@@ -161,7 +155,6 @@ public class CourseServiceImpl implements CourseService {
                 .build();
     }
 
-    // function used by student, if is enrolled it will show the content url
     private CourseDetailResponse toCourseDetailResponse(Course course, boolean isEnrolled) {
 
         List<ModuleResponse> modules = moduleRepository
@@ -179,13 +172,12 @@ public class CourseServiceImpl implements CourseService {
                 .durationHours(course.getDurationHours())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .isPublished(course.getIsPublished())
-                // .instructorName(course.getInstructor().getName()) // when the user repository is ready, uncomment this
+                .instructorName(course.getInstructor().getName())
                 .createdAt(course.getCreatedAt())
                 .modules(modules)
                 .build();
     }
 
-    // function used by instructor to show full response
     private CourseDetailResponse toCourseDetailResponse(Course course) {
 
         List<ModuleResponse> modules = moduleRepository
@@ -203,7 +195,7 @@ public class CourseServiceImpl implements CourseService {
                 .durationHours(course.getDurationHours())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .isPublished(course.getIsPublished())
-                // .instructorName(course.getInstructor().getName()) // when the user repository is ready, uncomment this
+                .instructorName(course.getInstructor().getName())
                 .createdAt(course.getCreatedAt())
                 .modules(modules)
                 .build();
@@ -215,9 +207,8 @@ public class CourseServiceImpl implements CourseService {
                 .title(course.getTitle())
                 .price(course.getPrice())
                 .category(course.getCategory())
-                // .instructorName(course.getInstructor().getName()) // when the user repository is ready, uncomment this
+                .instructorName(course.getInstructor().getName())
                 .thumbnailUrl(course.getThumbnailUrl())
                 .build();
     }
-
 }

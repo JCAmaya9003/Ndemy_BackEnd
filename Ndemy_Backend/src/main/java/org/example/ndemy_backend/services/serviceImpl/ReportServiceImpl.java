@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.response.AdminOverviewDTO;
 import org.example.ndemy_backend.dto.response.RevenueReportDTO;
 import org.example.ndemy_backend.models.enums.Role;
+import org.example.ndemy_backend.repositories.CourseRepository;
+import org.example.ndemy_backend.repositories.EnrollmentRepository;
 import org.example.ndemy_backend.repositories.PaymentRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.ReportService;
 import org.springframework.stereotype.Service;
 

@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.response.CertificateResponse;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.Certificate;
+import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.CertificateRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.CertificateService;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
     private final CertificateRepository certificateRepository;
+    private final UserRepository userRepository;
 
     @Override
     public CertificateResponse verifyCertificate(String certificateCode) {
@@ -26,10 +29,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public List<CertificateResponse> getStudentCertificates(UUID studentId) {
-        /* when the user repository is ready, uncomment this
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-         */
 
         return certificateRepository.findByStudentId(studentId)
                 .stream()
@@ -41,7 +42,7 @@ public class CertificateServiceImpl implements CertificateService {
         return CertificateResponse.builder()
                 .id(certificate.getId())
                 .courseTitle(certificate.getCourse().getTitle())
-                // .studentName(certificate.getStudent().getName()) // when the user repository is ready, uncomment this
+                .studentName(certificate.getStudent().getName())
                 .certificateCode(certificate.getCertificateCode())
                 .issuedAt(certificate.getIssuedAt())
                 .build();
