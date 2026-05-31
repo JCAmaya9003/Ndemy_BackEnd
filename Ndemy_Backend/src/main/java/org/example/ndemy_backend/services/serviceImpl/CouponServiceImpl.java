@@ -9,6 +9,7 @@ import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.CouponRepository;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
+import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.services.CouponService;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class CouponServiceImpl implements CouponService {
 
     private final CouponRepository couponRepository;
     private final CouponUsageRepository couponUsageRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public CouponDTO createCoupon(UUID createdById, CouponRequest request) {

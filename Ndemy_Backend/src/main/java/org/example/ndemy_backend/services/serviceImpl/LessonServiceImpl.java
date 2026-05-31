@@ -29,7 +29,6 @@ public class LessonServiceImpl implements LessonService {
 
         verifyOwnership(module.getCourse(), instructorId);
 
-        // in request, oder index is optional, if you don't send it, it will be assigned automatically at the end
         int targetIndex = resolveOrderIndex(
                 request.getOrderIndex(),
                 () -> lessonRepository.findMaxOrderIndexByModuleId(moduleId).orElse(0) + 1

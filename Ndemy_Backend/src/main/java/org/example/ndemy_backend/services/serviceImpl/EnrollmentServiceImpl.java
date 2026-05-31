@@ -21,16 +21,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final CertificateRepository certificateRepository;
+    private final UserRepository userRepository;
 
     @Override
     public EnrollmentResponse enroll(UUID studentId, UUID courseId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        /* when the user repository is ready, uncomment this
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-         */
 
         if (!course.getIsPublished()) {
             throw new CourseNotPublishedException("Course is not published yet");
@@ -43,7 +42,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment enrollment = Enrollment
                 .builder()
                 .course(course)
-                // .student(student) // when the user repository is ready, uncomment this
+                .student(student)
                 .isActive(true)
                 .build();
 
@@ -66,10 +65,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
-        /* when the user repository is ready, uncomment this
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-         */
 
         UUID courseId = lesson.getModule().getCourse().getId();
 
@@ -117,10 +114,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        /* when the user repository is ready, uncomment this
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-         */
 
         Enrollment enrollment = enrollmentRepository
                 .findByStudentIdAndCourseIdAndIsActiveTrue(studentId, courseId)
@@ -137,15 +132,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        /* when the user repository is ready, uncomment this
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-         */
 
         Certificate certificate = Certificate.builder()
                 .course(course)
                 .certificateCode(UUID.randomUUID().toString())
-                // .student(student) // when the user repository is ready, uncomment this
+                .student(student)
                 .build();
 
         certificateRepository.save(certificate);

@@ -9,7 +9,9 @@ import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.*;
 import org.example.ndemy_backend.models.enums.PaymentStatus;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
+import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.PaymentRepository;
+import org.example.ndemy_backend.services.EnrollmentService;
 import org.example.ndemy_backend.services.PaymentService;
 import org.springframework.stereotype.Service;
 

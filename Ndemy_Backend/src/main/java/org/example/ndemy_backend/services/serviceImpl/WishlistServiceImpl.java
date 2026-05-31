@@ -1,10 +1,12 @@
 package org.example.ndemy_backend.services.serviceImpl;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ndemy_backend.dto.response.CourseSummaryResponse;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.models.WishlistItem;
+import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.WishlistItemRepository;
 import org.example.ndemy_backend.services.WishlistService;
 import org.springframework.http.HttpStatus;
@@ -55,10 +57,10 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public List<CourseDTO> getWishlist(UUID studentId) {
+    public List<CourseSummaryResponse> getWishlist(UUID studentId) {
         return wishlistItemRepository.findByStudentId(studentId)
                 .stream()
-                .map(item -> CourseDTO.builder()
+                .map(item -> CourseSummaryResponse.builder()
                         .id(item.getCourse().getId())
                         .title(item.getCourse().getTitle())
                         .price(item.getCourse().getPrice())
