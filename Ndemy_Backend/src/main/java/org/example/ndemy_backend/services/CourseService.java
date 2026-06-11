@@ -19,5 +19,4 @@ public interface CourseService {
     CourseDetailResponse updateCourse(UUID courseId, CourseRequest request, UUID instructorId);
     void deleteCourseById(UUID courseId, UUID instructorId);
     CourseDetailResponse publishCourse(UUID courseId, UUID instructorId);
-    List<CourseSummaryResponse> getInstructorCourses(UUID instructorId);
 }

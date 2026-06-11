@@ -116,14 +116,6 @@ public class CourseServiceImpl implements CourseService {
         return toCourseDetailResponse(courseRepository.save(course));
     }
 
-    @Override
-    public List<CourseSummaryResponse> getInstructorCourses(UUID instructorId) {
-        return courseRepository.findByInstructorId(instructorId)
-                .stream()
-                .map(this::toCourseSummaryResponse)
-                .toList();
-    }
-
     private void verifyOwnership(Course course, UUID instructorId) {
         if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this course");
