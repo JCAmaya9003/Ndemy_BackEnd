@@ -10,5 +10,4 @@ public interface LessonService {
     LessonResponse createLesson(UUID moduleId, LessonRequest request, UUID instructorId);
     LessonResponse updateLesson(UUID lessonId, LessonRequest request, UUID instructorId);
     void deleteLesson(UUID lessonId, UUID instructorId);
-    List<LessonResponse> getLessonsByModule(UUID moduleId);
 }

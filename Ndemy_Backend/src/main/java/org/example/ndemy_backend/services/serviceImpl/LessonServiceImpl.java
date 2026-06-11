@@ -97,13 +97,6 @@ public class LessonServiceImpl implements LessonService {
         lessonRepository.delete(lesson);
     }
 
-    public List<LessonResponse> getLessonsByModule(UUID moduleId) {
-        return lessonRepository.findByModuleIdOrderByOrderIndexAsc(moduleId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
     private void verifyOwnership(Course course, UUID instructorId) {
         if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this lesson");
