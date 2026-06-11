@@ -29,7 +29,7 @@ public class ModuleServiceImpl implements ModuleService {
 
         verifyOwnership(course, instructorId);
 
-        // in request, oder index is optional, if you don't send it, it will be assigned automatically at the end
+        // in request, order index is optional, if you don't send it, it will be assigned automatically at the end
         int targetIndex = resolveOrderIndex(
                 request.getOrderIndex(),
                 () -> moduleRepository.findMaxOrderIndexByCourseId(courseId).orElse(0) + 1
@@ -94,14 +94,6 @@ public class ModuleServiceImpl implements ModuleService {
         verifyOwnership(module.getCourse(), instructorId);
 
         moduleRepository.delete(module);
-    }
-
-    @Override
-    public List<ModuleResponse> getModulesByCourse(UUID courseId) {
-        return moduleRepository.findByCourseIdOrderByOrderIndexAsc(courseId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
