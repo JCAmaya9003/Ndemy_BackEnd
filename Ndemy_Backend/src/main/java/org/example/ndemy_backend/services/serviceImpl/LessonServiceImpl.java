@@ -53,7 +53,10 @@ public class LessonServiceImpl implements LessonService {
                 .module(module)
                 .build();
 
-        return toResponse(lessonRepository.save(lesson));
+        lessonRepository.save(lesson);
+        reindex(moduleId);
+        return toResponse(lessonRepository.findById(lesson.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found after save")));
     }
 
     public LessonResponse updateLesson(UUID lessonId, LessonRequest request, UUID instructorId) {
@@ -61,31 +64,37 @@ public class LessonServiceImpl implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
         verifyOwnership(lesson.getModule().getCourse(), instructorId);
+        UUID moduleId = lesson.getModule().getId();
 
         lesson.setTitle(request.getTitle());
         lesson.setContentType(request.getContentType());
         lesson.setContentUrl(request.getContentUrl());
 
         if(request.getOrderIndex() != null) {
+            int oldIndex = lesson.getOrderIndex();
             int targetIndex = request.getOrderIndex();
-            UUID moduleId = lesson.getModule().getId();
 
-            if(lessonRepository.existsByModuleIdAndOrderIndex(moduleId, targetIndex)) {
-                List<Lesson> toShift =  lessonRepository
-                        .findByModuleIdAndOrderIndexGreaterThanEqual(moduleId, targetIndex);
-                // it doesn't shift the updated lesson
-                toShift.forEach(l -> {
-                    if(!l.getId().equals(lesson.getId())) {
-                        l.setOrderIndex(l.getOrderIndex() + 1);
-                    }
-                });
+            if (targetIndex < oldIndex) {
+                // moves up — shifts middle elements to right
+                List<Lesson> toShift = lessonRepository
+                        .findByModuleIdAndOrderIndexBetween(moduleId, targetIndex, oldIndex - 1);
+                toShift.forEach(l -> l.setOrderIndex(l.getOrderIndex() + 1));
+                lessonRepository.saveAll(toShift);
+            } else if (targetIndex > oldIndex) {
+                // moves down — shifts middle elements to left
+                List<Lesson> toShift = lessonRepository
+                        .findByModuleIdAndOrderIndexBetween(moduleId, oldIndex + 1, targetIndex);
+                toShift.forEach(l -> l.setOrderIndex(l.getOrderIndex() - 1));
                 lessonRepository.saveAll(toShift);
             }
 
             lesson.setOrderIndex(targetIndex);
         }
 
-        return toResponse(lessonRepository.save(lesson));
+        lessonRepository.save(lesson);
+        reindex(moduleId);
+        return toResponse(lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found after save")));
     }
 
     public void deleteLesson(UUID lessonId, UUID instructorId) {
@@ -93,8 +102,10 @@ public class LessonServiceImpl implements LessonService {
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
         verifyOwnership(lesson.getModule().getCourse(), instructorId);
+        UUID moduleId = lesson.getModule().getId();
 
         lessonRepository.delete(lesson);
+        reindex(moduleId);
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
@@ -115,5 +126,15 @@ public class LessonServiceImpl implements LessonService {
                 .orderIndex(lesson.getOrderIndex())
                 .contentUrl(lesson.getContentUrl())
                 .build();
+    }
+
+    // helper to keep order index in consecutive order (1,2,3,4,5,...)
+    private void reindex(UUID moduleId) {
+        List<Lesson> lessons = lessonRepository
+                .findByModuleIdOrderByOrderIndexAsc(moduleId);
+        for (int i = 0; i < lessons.size(); i++) {
+            lessons.get(i).setOrderIndex(i + 1);
+        }
+        lessonRepository.saveAll(lessons);
     }
 }

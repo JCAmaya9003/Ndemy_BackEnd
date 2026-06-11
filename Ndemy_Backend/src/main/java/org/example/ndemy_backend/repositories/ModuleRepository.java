@@ -16,6 +16,7 @@ public interface ModuleRepository extends JpaRepository<Module, UUID> {
 
     boolean existsByCourseIdAndOrderIndex(UUID courseId, Integer orderIndex);
     List<Module> findByCourseIdAndOrderIndexGreaterThanEqual(UUID courseId, Integer orderIndex);
+    List<Module> findByCourseIdAndOrderIndexBetween(UUID courseId, Integer start, Integer end);
 
     @Query("SELECT MAX(m.orderIndex) FROM Module m WHERE m.course.id = :courseId")
     Optional<Integer> findMaxOrderIndexByCourseId(@Param("courseId") UUID courseId);

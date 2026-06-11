@@ -52,7 +52,11 @@ public class ModuleServiceImpl implements ModuleService {
                 .course(course)
                 .build();
 
-        return toResponse(moduleRepository.save(module));
+        moduleRepository.save(module);
+        reindex(courseId);
+
+        return toResponse(moduleRepository.findById(module.getId())
+                .orElseThrow(() ->  new ResourceNotFoundException("Module not found")));
     }
 
     @Override
@@ -61,29 +65,36 @@ public class ModuleServiceImpl implements ModuleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Module not found"));
 
         verifyOwnership(module.getCourse(), instructorId);
+        UUID courseId = module.getCourse().getId();
 
         module.setTitle(request.getTitle());
 
         if (request.getOrderIndex() != null) {
+            int oldIndex = module.getOrderIndex();
             int targetIndex = request.getOrderIndex();
-            UUID courseId = module.getCourse().getId();
 
-            if(moduleRepository.existsByCourseIdAndOrderIndex(courseId, targetIndex)) {
+            if (targetIndex < oldIndex) {
+                // moves up — shifts middle elements to right
                 List<Module> toShift = moduleRepository
-                        .findByCourseIdAndOrderIndexGreaterThanEqual(courseId, targetIndex);
-                toShift.forEach(m -> {
-                    // it doesn't shift the updated module
-                    if(!m.getId().equals(moduleId)) {
-                        m.setOrderIndex(m.getOrderIndex() + 1);
-                    }
-                });
+                        .findByCourseIdAndOrderIndexBetween(courseId, targetIndex, oldIndex - 1);
+                toShift.forEach(m -> m.setOrderIndex(m.getOrderIndex() + 1));
+                moduleRepository.saveAll(toShift);
+            } else if (targetIndex > oldIndex) {
+                // moves down - shifts middle elements to left
+                List<Module> toShift = moduleRepository
+                        .findByCourseIdAndOrderIndexBetween(courseId, oldIndex + 1, targetIndex);
+                toShift.forEach(m -> m.setOrderIndex(m.getOrderIndex() - 1));
                 moduleRepository.saveAll(toShift);
             }
 
             module.setOrderIndex(targetIndex);
         }
 
-        return toResponse(moduleRepository.save(module));
+        moduleRepository.save(module);
+        reindex(courseId);
+
+        return toResponse(moduleRepository.findById(moduleId)
+                .orElseThrow(() ->  new ResourceNotFoundException("Module not found")));
     }
 
     @Override
@@ -92,8 +103,10 @@ public class ModuleServiceImpl implements ModuleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Module not found"));
 
         verifyOwnership(module.getCourse(), instructorId);
+        UUID courseId = module.getCourse().getId();
 
         moduleRepository.delete(module);
+        reindex(courseId);
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
@@ -112,5 +125,15 @@ public class ModuleServiceImpl implements ModuleService {
                 .title(module.getTitle())
                 .orderIndex(module.getOrderIndex())
                 .build();
+    }
+
+    // helper to keep order index in consecutive order (1,2,3,4,5,...)
+    private void reindex(UUID courseId) {
+        List<Module> modules = moduleRepository
+                .findByCourseIdOrderByOrderIndexAsc(courseId);
+        for (int i = 0; i < modules.size(); i++) {
+            modules.get(i).setOrderIndex(i + 1);
+        }
+        moduleRepository.saveAll(modules);
     }
 }
