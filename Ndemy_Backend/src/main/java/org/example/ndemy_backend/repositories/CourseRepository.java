@@ -22,8 +22,9 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
         AND (:category IS NULL OR c.category = :category)
         AND (:minPrice IS NULL OR c.price >= :minPrice)
         AND (:maxPrice IS NULL OR c.price <= :maxPrice)
-        AND (:search IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:search IS NULL OR
+            LOWER(c.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))
+            OR LOWER(c.description) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))
         """)
     Page<Course> findWithFilters(
             @Param("category") String category,

@@ -10,5 +10,4 @@ public interface ModuleService {
     ModuleResponse createModule(UUID courseId, ModuleRequest request, UUID instructorId);
     ModuleResponse updateModule(UUID moduleId, ModuleRequest request, UUID instructorId);
     void deleteModule(UUID moduleId, UUID instructorId);
-    List<ModuleResponse> getModulesByCourse(UUID courseId);
 }
