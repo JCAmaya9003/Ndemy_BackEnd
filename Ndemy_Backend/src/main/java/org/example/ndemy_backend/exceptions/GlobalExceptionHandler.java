@@ -1,11 +1,13 @@
 package org.example.ndemy_backend.exceptions;
 
+import org.example.ndemy_backend.dto.response.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -15,89 +17,88 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleResourceNotFound(ResourceNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(AlreadyReviewedException.class)
-    public ResponseEntity<Map<String, Object>> handleAlreadyReviewed(AlreadyReviewedException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleAlreadyReviewed(AlreadyReviewedException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(AlreadyEnrolledException.class)
-    public ResponseEntity<Map<String, Object>> handleAlreadyEnrolled(AlreadyEnrolledException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleAlreadyEnrolled(AlreadyEnrolledException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(CouponExpiredException.class)
-    public ResponseEntity<Map<String, Object>> handleCouponExpired(CouponExpiredException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCouponExpired(CouponExpiredException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(CouponExhaustedException.class)
-    public ResponseEntity<Map<String, Object>> handleCouponExhausted(CouponExhaustedException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCouponExhausted(CouponExhaustedException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(CouponAlreadyUsedException.class)
-    public ResponseEntity<Map<String, Object>> handleCouponAlreadyUsed(CouponAlreadyUsedException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCouponAlreadyUsed(CouponAlreadyUsedException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(CouponInactiveException.class)
-    public ResponseEntity<Map<String, Object>> handleCouponInactive(CouponInactiveException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCouponInactive(CouponInactiveException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(CourseNotPublishedException.class)
-    public ResponseEntity<Map<String, Object>> handleCourseNotPublished(CourseNotPublishedException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCourseNotPublished(CourseNotPublishedException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(NotEnrolledException.class)
-    public ResponseEntity<Map<String, Object>> handleNotEnrolled(NotEnrolledException ex) {
-        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleNotEnrolled(NotEnrolledException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(CertificateAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Object>> handleCertificateAlreadyExists(CertificateAlreadyExistsException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleCertificateAlreadyExists(CertificateAlreadyExistsException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
-        return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(LessonAlreadyCompletedException.class)
-    public ResponseEntity<Map<String, Object>> handleLessonAlreadyCompleted(LessonAlreadyCompletedException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    public ResponseEntity<ApiErrorResponse> handleLessonAlreadyCompleted(LessonAlreadyCompletedException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             fieldErrors.put(error.getField(), error.getDefaultMessage());
         }
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation failed");
-        body.put("messages", fieldErrors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, fieldErrors);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
+    public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ex) {
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
     }
 
-    private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", status.value());
-        body.put("message", message);
-        return ResponseEntity.status(status).body(body);
+    private ResponseEntity<ApiErrorResponse> buildErrorResponse(HttpStatus status, Object message) {
+        String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
+        return ResponseEntity
+                .status(status)
+                .body(ApiErrorResponse.builder()
+                        .message(message)
+                        .status(status.value())
+                        .time(LocalDateTime.now())
+                        .uri(uri)
+                        .build());
     }
 }
