@@ -51,7 +51,7 @@ public class ModuleController {
         );
     }
 
-    // Modules can only be edited by the owner instructor
+    // Modules can only be deleted by the owner instructor
     @DeleteMapping("/modules/{id}")
     public ResponseEntity<GeneralResponse> deleteModule(
             @PathVariable UUID id,
