@@ -31,4 +31,7 @@ public class Exam {
     @Column(name = "passing_score", nullable = false)
     @Builder.Default
     private Integer passingScore = 80;
+
+    @Column(name = "time_limit_minutes")
+    private Integer timeLimitMinutes;
 }
