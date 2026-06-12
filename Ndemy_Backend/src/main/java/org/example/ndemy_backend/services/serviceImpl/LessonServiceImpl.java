@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Supplier;
+
+import static org.example.ndemy_backend.utils.OrderIndexUtil.resolveOrderIndex;
 
 @Service
 @RequiredArgsConstructor
@@ -112,10 +113,6 @@ public class LessonServiceImpl implements LessonService {
         if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this lesson");
         }
-    }
-
-    private int resolveOrderIndex(Integer requested, Supplier<Integer> fallback) {
-        return requested != null ? requested : fallback.get();
     }
 
     private LessonResponse toResponse(Lesson lesson) {
