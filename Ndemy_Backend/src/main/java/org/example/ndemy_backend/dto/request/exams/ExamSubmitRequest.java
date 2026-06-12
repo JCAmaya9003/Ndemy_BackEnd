@@ -1,4 +1,4 @@
-package org.example.ndemy_backend.dto.request.exam;
+package org.example.ndemy_backend.dto.request.exams;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;

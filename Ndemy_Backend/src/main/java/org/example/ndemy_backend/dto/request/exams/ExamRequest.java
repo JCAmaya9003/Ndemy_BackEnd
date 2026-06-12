@@ -1,4 +1,4 @@
-package org.example.ndemy_backend.dto.request.exam;
+package org.example.ndemy_backend.dto.request.exams;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
