@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "options")
+@Table(name = "exam_options")
 public class Option {
 
     @Id
