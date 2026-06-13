@@ -1,4 +1,4 @@
-package org.example.ndemy_backend.services.impl;
+package org.example.ndemy_backend.services.serviceImpl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.LoginRequest;
@@ -8,7 +8,7 @@ import org.example.ndemy_backend.dto.response.UserResponse;
 import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.UserRepository;
-import org.example.ndemy_backend.security.JwtService;
+import org.example.ndemy_backend.security.jwtService;
 import org.example.ndemy_backend.services.AuthService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private static final int MAX_FAILED_ATTEMPTS = 5;
 
     private final UserRepository userRepository;
-    private final JwtService jwtService;
+    private final jwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
