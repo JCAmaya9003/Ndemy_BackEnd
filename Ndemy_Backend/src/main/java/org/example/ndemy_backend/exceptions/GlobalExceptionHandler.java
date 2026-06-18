@@ -109,6 +109,26 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
     }
 
+    @ExceptionHandler(DuplicateCouponCodeException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateCouponCode(DuplicateCouponCodeException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(CouponNotEditableException.class)
+    public ResponseEntity<ApiErrorResponse> handleCouponNotEditable(CouponNotEditableException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(AlreadyInWishlistException.class)
+    public ResponseEntity<ApiErrorResponse> handleAlreadyInWishlist(AlreadyInWishlistException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(PaymentNotRefundableException.class)
+    public ResponseEntity<ApiErrorResponse> handlePaymentNotRefundable(PaymentNotRefundableException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(HttpStatus status, Object message) {
         String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
         return ResponseEntity

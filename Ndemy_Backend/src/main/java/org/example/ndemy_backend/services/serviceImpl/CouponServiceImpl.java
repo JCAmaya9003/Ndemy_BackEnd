@@ -10,6 +10,7 @@ import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.CouponRepository;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
 import org.example.ndemy_backend.repositories.CourseRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.CouponService;
 import org.springframework.stereotype.Service;
 
@@ -26,15 +27,16 @@ public class CouponServiceImpl implements CouponService {
     private final CouponRepository couponRepository;
     private final CouponUsageRepository couponUsageRepository;
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
     @Override
     public CouponDTO createCoupon(UUID createdById, CouponRequest request) {
         if (couponRepository.existsByCode(request.getCode())) {
-            throw new ResourceNotFoundException("Ya existe un cupón con ese código");
+            throw new DuplicateCouponCodeException("Ya existe un cupón con ese código");
         }
 
-        User createdBy = new User();
-        createdBy.setId(createdById);
+        User createdBy = userRepository.findById(createdById)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         Coupon coupon = Coupon.builder()
                 .code(request.getCode())
@@ -65,7 +67,7 @@ public class CouponServiceImpl implements CouponService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
 
         if (coupon.getCurrentUses() > 0) {
-            throw new ResourceNotFoundException("No se puede editar un cupón que ya tiene usos registrados");
+            throw new CouponNotEditableException("No se puede editar un cupón que ya tiene usos registrados");
         }
 
         coupon.setCode(request.getCode());
@@ -94,6 +96,7 @@ public class CouponServiceImpl implements CouponService {
         return calculateFinalPrice(course.getPrice(), coupon);
     }
 
+    @Override
     public Coupon validateAndGetCoupon(String code, UUID userId) {
         Coupon coupon = couponRepository.findByCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
@@ -117,6 +120,7 @@ public class CouponServiceImpl implements CouponService {
         return coupon;
     }
 
+    @Override
     public BigDecimal calculateFinalPrice(BigDecimal originalPrice, Coupon coupon) {
         BigDecimal discount = BigDecimal.valueOf(coupon.getDiscountPercent())
                 .divide(BigDecimal.valueOf(100));

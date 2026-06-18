@@ -5,10 +5,13 @@ import org.example.ndemy_backend.dto.request.ReviewRequest;
 import org.example.ndemy_backend.dto.response.ReviewDTO;
 import org.example.ndemy_backend.exceptions.AlreadyReviewedException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
+import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Review;
 import org.example.ndemy_backend.models.User;
+import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.ReviewRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.ReviewService;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,8 @@ import java.util.UUID;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     public ReviewDTO createReview(UUID courseId, UUID studentId, ReviewRequest request) {
@@ -28,11 +33,11 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AlreadyReviewedException("Ya dejaste una reseña en este curso");
         }
 
-        User student = new User();
-        student.setId(studentId);
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado"));
 
-        Course course = new Course();
-        course.setId(courseId);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
 
         Review review = Review.builder()
                 .student(student)
@@ -59,7 +64,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reseña no encontrada"));
 
         if (!review.getStudent().getId().equals(studentId)) {
-            throw new ResourceNotFoundException("No tienes permiso para editar esta reseña");
+            throw new UnauthorizedException("No tienes permiso para editar esta reseña");
         }
 
         review.setRating(request.getRating());
@@ -78,7 +83,7 @@ public class ReviewServiceImpl implements ReviewService {
         boolean isAuthor = review.getStudent().getId().equals(requesterId);
 
         if (!isAdmin && !isAuthor) {
-            throw new ResourceNotFoundException("No tienes permiso para eliminar esta reseña");
+            throw new UnauthorizedException("No tienes permiso para eliminar esta reseña");
         }
 
         reviewRepository.delete(review);
