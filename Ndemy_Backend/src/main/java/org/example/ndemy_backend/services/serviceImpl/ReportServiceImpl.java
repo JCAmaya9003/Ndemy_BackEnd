@@ -10,7 +10,6 @@ import org.example.ndemy_backend.repositories.PaymentRepository;
 import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.ReportService;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,8 +60,9 @@ public class ReportServiceImpl implements ReportService {
         Long totalStudents = userRepository.countByRole(Role.STUDENT);
         Long totalInstructors = userRepository.countByRole(Role.INSTRUCTOR);
         Long totalAdmins = userRepository.countByRole(Role.ADMIN);
-        Long totalPublishedCourses = courseRepository.countByIsPublishedTrue();
-        Long totalActiveEnrollments = enrollmentRepository.countByIsActiveTrue();
+        Long totalPublishedCourses = (long) courseRepository.countByIsPublishedTrue();
+        Long totalActiveEnrollments = (long) enrollmentRepository.countByIsActiveTrue();
+
         BigDecimal totalRevenue = paymentRepository.findTotalPlatformRevenue();
 
         List<AdminOverviewDTO.CourseRankDTO> topByEnrollments = enrollmentRepository
