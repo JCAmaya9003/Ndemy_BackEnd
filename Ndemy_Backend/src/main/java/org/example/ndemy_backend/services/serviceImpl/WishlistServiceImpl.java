@@ -2,6 +2,7 @@ package org.example.ndemy_backend.services.serviceImpl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.response.CourseSummaryResponse;
+import org.example.ndemy_backend.exceptions.AlreadyInWishlistException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.User;
@@ -9,9 +10,7 @@ import org.example.ndemy_backend.models.WishlistItem;
 import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.WishlistItemRepository;
 import org.example.ndemy_backend.services.WishlistService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +29,7 @@ public class WishlistServiceImpl implements WishlistService {
         }
 
         if (wishlistItemRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El curso ya está en tu wishlist");
+            throw new AlreadyInWishlistException("El curso ya está en tu wishlist");
         }
 
         User student = new User();

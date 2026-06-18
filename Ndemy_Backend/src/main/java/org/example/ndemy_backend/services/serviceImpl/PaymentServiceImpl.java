@@ -5,12 +5,17 @@ import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.CheckoutRequest;
 import org.example.ndemy_backend.dto.response.PaymentDTO;
 import org.example.ndemy_backend.exceptions.AlreadyEnrolledException;
+import org.example.ndemy_backend.exceptions.PaymentNotRefundableException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
+import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.*;
 import org.example.ndemy_backend.models.enums.PaymentStatus;
+import org.example.ndemy_backend.repositories.CouponRepository;
 import org.example.ndemy_backend.repositories.CouponUsageRepository;
 import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.PaymentRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
+import org.example.ndemy_backend.services.CouponService;
 import org.example.ndemy_backend.services.EnrollmentService;
 import org.example.ndemy_backend.services.PaymentService;
 import org.springframework.stereotype.Service;
@@ -24,38 +29,34 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final CouponUsageRepository couponUsageRepository;
-    private final CouponServiceImpl couponServiceImpl;
-
-    //No funcionara hasta que se hagan los repositories
+    private final CouponRepository couponRepository;
+    private final CouponService couponService;
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
     private final EnrollmentService enrollmentService;
 
     @Override
     @Transactional
     public PaymentDTO checkout(UUID studentId, CheckoutRequest request) {
 
-        //obtener el curso y su precio
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
 
-        //verificar que el estudiante no haya pagado ya este curso
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Estudiante no encontrado"));
+
         if (paymentRepository.existsByStudentIdAndCourseIdAndStatus(
                 studentId, course.getId(), PaymentStatus.COMPLETED)) {
             throw new AlreadyEnrolledException("Ya tienes acceso a este curso");
         }
 
-        //calcular precio final (con o sin cupón)
         BigDecimal finalPrice = course.getPrice();
         Coupon couponUsed = null;
 
         if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
-            couponUsed = couponServiceImpl.validateAndGetCoupon(request.getCouponCode(), studentId);
-            finalPrice = couponServiceImpl.calculateFinalPrice(course.getPrice(), couponUsed);
+            couponUsed = couponService.validateAndGetCoupon(request.getCouponCode(), studentId);
+            finalPrice = couponService.calculateFinalPrice(course.getPrice(), couponUsed);
         }
-
-        //crear el PaymentRecord con estado PENDING
-        User student = new User();
-        student.setId(studentId);
 
         PaymentRecord payment = PaymentRecord.builder()
                 .student(student)
@@ -67,11 +68,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         paymentRepository.save(payment);
 
-        //simular procesamiento del pago
         payment.setStatus(PaymentStatus.COMPLETED);
         PaymentRecord saved = paymentRepository.save(payment);
 
-        //registrar uso del cupon
         if (couponUsed != null) {
             CouponUsage usage = CouponUsage.builder()
                     .coupon(couponUsed)
@@ -79,10 +78,11 @@ public class PaymentServiceImpl implements PaymentService {
                     .course(course)
                     .build();
             couponUsageRepository.save(usage);
+
             couponUsed.setCurrentUses(couponUsed.getCurrentUses() + 1);
+            couponRepository.save(couponUsed);
         }
 
-        //activar inscripcion al curso
         enrollmentService.enroll(studentId, course.getId());
 
         return mapToDTO(saved);
@@ -95,14 +95,13 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado"));
 
         if (!payment.getStudent().getId().equals(studentId)) {
-            throw new ResourceNotFoundException("No tienes permiso para reembolsar este pago");
+            throw new UnauthorizedException("No tienes permiso para reembolsar este pago");
         }
 
         if (!PaymentStatus.COMPLETED.equals(payment.getStatus())) {
-            throw new ResourceNotFoundException("Solo se pueden reembolsar pagos completados");
+            throw new PaymentNotRefundableException("Solo se pueden reembolsar pagos completados");
         }
 
-        //desactivar inscripción
         enrollmentService.deactivateEnrollment(studentId, payment.getCourse().getId());
 
         payment.setStatus(PaymentStatus.REFUNDED);
