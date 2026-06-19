@@ -11,4 +11,6 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
     int countByEnrollmentId(UUID enrollmentId);
 
     boolean existsByEnrollmentIdAndLessonId(UUID enrollmentId, UUID lessonId);
+
+    void deleteByEnrollmentId(UUID enrollmentId);
 }

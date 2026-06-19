@@ -14,4 +14,5 @@ import java.util.UUID;
 public class OptionResponse {
     private UUID id;
     private String text;
+    private Boolean isCorrect;
 }
