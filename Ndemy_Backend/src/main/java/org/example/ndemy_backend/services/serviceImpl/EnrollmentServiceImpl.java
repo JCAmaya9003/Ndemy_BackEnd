@@ -20,7 +20,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseRepository courseRepository;
     private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
-    private final CertificateRepository certificateRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -65,8 +64,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
 
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        if(userRepository.findById(studentId).isEmpty()) {
+            throw new ResourceNotFoundException("Student not found");
+        }
 
         UUID courseId = lesson.getModule().getCourse().getId();
 
@@ -89,10 +89,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         double progressPercent = calculateProgress(enrollment.getId(), courseId);
         boolean courseCompleted = progressPercent == 100.0;
 
-        if (courseCompleted) {
-            generateCertificate(studentId, courseId);
-        }
-
         return ProgressResponse
                 .builder()
                 .lessonId(lessonId)
@@ -105,43 +101,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public List<StudentCourseResponse> getStudentCourses(UUID studentId) {
         return enrollmentRepository.findByStudentIdAndIsActiveTrue(studentId)
                 .stream()
-                .map(e -> toStudentCourseResponse(e, studentId))
+                .map(this::toStudentCourseResponse)
                 .toList();
     }
 
     @Override
     public StudentCourseResponse getCourseProgress(UUID studentId, UUID courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        if(courseRepository.findById(courseId).isEmpty()) {
+            throw new ResourceNotFoundException("Course not found");
+        }
 
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+        if(userRepository.findById(studentId).isEmpty()) {
+            throw new ResourceNotFoundException("Student not found");
+        }
 
         Enrollment enrollment = enrollmentRepository
                 .findByStudentIdAndCourseIdAndIsActiveTrue(studentId, courseId)
                 .orElseThrow(() -> new NotEnrolledException("Student is not enrolled in this course"));
 
-        return toStudentCourseResponse(enrollment, studentId);
-    }
-
-    private void generateCertificate(UUID studentId, UUID courseId) {
-        if (certificateRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            throw new CertificateAlreadyExistsException("Certificate already exists");
-        }
-
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
-
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
-
-        Certificate certificate = Certificate.builder()
-                .course(course)
-                .certificateCode(UUID.randomUUID().toString())
-                .student(student)
-                .build();
-
-        certificateRepository.save(certificate);
+        return toStudentCourseResponse(enrollment);
     }
 
     private double calculateProgress(UUID enrollmentId, UUID courseId) {
@@ -151,7 +129,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         return (completed * 100.0) / total;
     }
 
-    private StudentCourseResponse toStudentCourseResponse(Enrollment enrollment, UUID studentId) {
+    private StudentCourseResponse toStudentCourseResponse(Enrollment enrollment) {
         UUID courseId = enrollment.getCourse().getId();
         double progress = calculateProgress(enrollment.getId(), courseId);
 
