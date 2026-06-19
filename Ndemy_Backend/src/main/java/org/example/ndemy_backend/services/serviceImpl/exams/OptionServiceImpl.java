@@ -3,6 +3,7 @@ package org.example.ndemy_backend.services.serviceImpl.exams;
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.exams.OptionRequest;
 import org.example.ndemy_backend.dto.response.exams.OptionResponse;
+import org.example.ndemy_backend.exceptions.CorrectOptionDeletionException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.exams.Option;
@@ -66,6 +67,12 @@ public class OptionServiceImpl implements OptionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Option not found"));
 
         verifyOwnership(option.getQuestion(), instructorId);
+
+        // prevent deleting the correct option without reassigning first
+        if (Boolean.TRUE.equals(option.getIsCorrect())) {
+            throw new CorrectOptionDeletionException(
+                    "You must mark another option as correct before deleting this one");
+        }
 
         optionRepository.delete(option);
     }

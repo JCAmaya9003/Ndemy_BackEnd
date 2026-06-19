@@ -129,6 +129,26 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(ExamAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleExamAlreadyExists(ExamAlreadyExistsException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(ExamAttemptsExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleExamAttemptsExceeded(ExamAttemptsExceededException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(ExamNotUnlockedException.class)
+    public ResponseEntity<ApiErrorResponse> handleExamNotUnlocked(ExamNotUnlockedException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(CorrectOptionDeletionException.class)
+    public ResponseEntity<ApiErrorResponse> handleCorrectOptionDeletion(CorrectOptionDeletionException ex) {
+        return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(HttpStatus status, Object message) {
         String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
         return ResponseEntity
