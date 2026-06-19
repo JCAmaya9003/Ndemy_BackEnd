@@ -287,18 +287,18 @@ public class ExamServiceImpl implements ExamService {
 
     }
 
-    private ExamResponse toExamResponse(Exam exam, boolean showCorrectAnswers) {
+    private ExamResponse toExamResponse(Exam exam, boolean isPrivileged) {
         List<Question> questions = questionRepository
                 .findByExamIdOrderByOrderIndexAsc(exam.getId());
 
         // shuffle questions for students to prevent copying
-        if (!showCorrectAnswers) {
+        if (!isPrivileged) {
             questions = new ArrayList<>(questions);
             Collections.shuffle(questions);
         }
 
         List<QuestionResponse> questionResponses = questions.stream()
-                .map(this::toQuestionResponse)
+                .map(q -> toQuestionResponse(q, isPrivileged))
                 .toList();
 
         return ExamResponse.builder()
@@ -309,13 +309,14 @@ public class ExamServiceImpl implements ExamService {
                 .build();
     }
 
-    private QuestionResponse toQuestionResponse(Question question) {
+    private QuestionResponse toQuestionResponse(Question question, boolean isPrivileged) {
         List<Option> options = optionRepository.findByQuestionId(question.getId());
 
         List<OptionResponse> optionResponses = options.stream()
                 .map(o -> OptionResponse.builder()
                         .id(o.getId())
                         .text(o.getText())
+                        .isCorrect(isPrivileged ? o.getIsCorrect() : null)
                         .build())
                 .toList();
 
