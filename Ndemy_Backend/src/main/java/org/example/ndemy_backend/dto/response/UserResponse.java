@@ -18,4 +18,5 @@ public class UserResponse {
     private Boolean isActive;
     private Boolean isLocked;
     private LocalDateTime createdAt;
+    private String photoUrl;
 }

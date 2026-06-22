@@ -28,14 +28,25 @@ public class SecurityConfig {
     private final jwtAuthFilter jwtAuthFilter;
     private final UserRepository userRepository;
     private final CorsConfigurationSource corsConfigurationSource;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
+                        // Autenticación pública
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // Solo ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Perfil propio: cualquier usuario autenticado
+                        // (la regla anyRequest().authenticated() ya lo cubre,
+                        //  pero se declara explícito para mayor claridad)
+                        .requestMatchers("/api/users/me/**").authenticated()
+
+                        // El resto de endpoints requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess ->

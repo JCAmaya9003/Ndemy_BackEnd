@@ -18,6 +18,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
 
     List<Enrollment> findByStudentIdAndIsActiveTrue(UUID studentId);
 
+    boolean existsByStudentIdAndCourseIdAndIsActiveTrue(UUID studentId, UUID courseId);
+
     // usage in report service
     int countByIsActiveTrue();
 

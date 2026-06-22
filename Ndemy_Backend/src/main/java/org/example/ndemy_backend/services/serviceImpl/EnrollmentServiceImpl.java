@@ -64,4 +64,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .completedAt(enrollment.getCompletedAt())
                 .build();
     }
+
+    @Override
+    public boolean hasUserPaidCourse(UUID userId, UUID courseId) {
+        return enrollmentRepository.existsByStudentIdAndCourseIdAndIsActiveTrue(userId, courseId);
+    }
 }
