@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseStatusResponse {
+public class CourseStatsResponse {
     private UUID courseId;
     private String title;
     private String category;
