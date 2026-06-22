@@ -6,6 +6,7 @@ import org.example.ndemy_backend.dto.response.CourseDetailResponse;
 import org.example.ndemy_backend.dto.response.CourseSummaryResponse;
 import org.example.ndemy_backend.dto.response.LessonResponse;
 import org.example.ndemy_backend.dto.response.ModuleResponse;
+import org.example.ndemy_backend.exceptions.CourseNotReadyException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
@@ -14,6 +15,7 @@ import org.example.ndemy_backend.models.Module;
 import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.*;
+import org.example.ndemy_backend.repositories.exams.ExamRepository;
 import org.example.ndemy_backend.services.CourseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,7 @@ public class CourseServiceImpl implements CourseService {
     private final LessonRepository lessonRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final ExamRepository examRepository;
 
     @Override
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
@@ -110,6 +113,10 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         verifyOwnership(course, instructorId);
+
+        if (!examRepository.existsByCourseId(courseId)) {
+            throw new CourseNotReadyException("Course must have an exam before publishing");
+        }
 
         course.setIsPublished(true);
 
