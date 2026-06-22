@@ -21,6 +21,7 @@ import org.example.ndemy_backend.repositories.exams.ExamAttemptRepository;
 import org.example.ndemy_backend.repositories.exams.ExamRepository;
 import org.example.ndemy_backend.repositories.exams.OptionRepository;
 import org.example.ndemy_backend.repositories.exams.QuestionRepository;
+import org.example.ndemy_backend.services.LessonProgressService;
 import org.example.ndemy_backend.services.exams.ExamService;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +48,8 @@ public class ExamServiceImpl implements ExamService {
     private final LessonProgressRepository lessonProgressRepository;
     private final CertificateRepository certificateRepository;
     private final UserRepository userRepository;
+
+    private final LessonProgressService lessonProgressService;
 
     @Override
     public ExamResponse createExam(UUID courseId, ExamRequest request, UUID instructorId) {
@@ -85,7 +88,7 @@ public class ExamServiceImpl implements ExamService {
                     .orElseThrow(() -> new NotEnrolledException("You are not enrolled in this course"));
 
             // verify 100% progress
-            double progress = calculateProgress(enrollment.getId(), courseId);
+            double progress = lessonProgressService.calculateProgress(enrollment.getId(), courseId);
             if (progress < 100.0) {
                 throw new ExamNotUnlockedException("Complete all lessons before taking the exam");
             }
@@ -144,7 +147,7 @@ public class ExamServiceImpl implements ExamService {
                 .orElseThrow(() -> new NotEnrolledException("You are not enrolled in this course"));
 
         // verify 100% progress
-        double progress = calculateProgress(enrollment.getId(), courseId);
+        double progress = lessonProgressService.calculateProgress(enrollment.getId(), courseId);
         if (progress < 100.0) {
             throw new ExamNotUnlockedException("Complete all lessons before taking the exam");
         }
@@ -248,13 +251,6 @@ public class ExamServiceImpl implements ExamService {
         if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this exam");
         }
-    }
-
-    private double calculateProgress(UUID enrollmentId, UUID courseId) {
-        int completed = lessonProgressRepository.countByEnrollmentId(enrollmentId);
-        int total = lessonRepository.countByModuleCourseId(courseId);
-        if (total == 0) return 0.0;
-        return (completed * 100.0) / total;
     }
 
     private void generateCertificate(User student, Course course) {

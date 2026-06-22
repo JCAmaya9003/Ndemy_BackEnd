@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.LessonRequest;
 import org.example.ndemy_backend.dto.response.GeneralResponse;
 import org.example.ndemy_backend.models.User;
+import org.example.ndemy_backend.services.LessonProgressService;
 import org.example.ndemy_backend.services.LessonService;
 import org.example.ndemy_backend.utils.ResponseBuilder;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class LessonController {
 
     private final LessonService lessonService;
+    private final LessonProgressService lessonProgressService;
 
     // orderIndex is optional in lesson requests
     // if not provided, it will be assigned automatically at the end
@@ -61,6 +63,17 @@ public class LessonController {
                 "Lesson deleted successfully",
                 HttpStatus.OK,
                 null
+        );
+    }
+
+    @PostMapping("/lessons/{id}/complete")
+    public ResponseEntity<GeneralResponse> completeLesson(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseBuilder.buildResponse(
+                "Lesson completed successfully",    
+                HttpStatus.OK,
+                lessonProgressService.completeLesson(currentUser.getId(), id)
         );
     }
 }
