@@ -134,4 +134,25 @@ public class LessonServiceImpl implements LessonService {
         }
         lessonRepository.saveAll(lessons);
     }
+
+    @Override
+    public UUID getCourseIdByLessonId(UUID lessonId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        return lesson.getModule().getCourse().getId();
+    }
+
+    @Override
+    public boolean isInstructorOfCourse(UUID userId, UUID courseId) {
+        return lessonRepository.existsByModuleCoursIdAndInstructorId(courseId, userId);
+    }
+
+    @Override
+    public LessonResponse getLessonById(UUID lessonId, UUID userId) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+        return toResponse(lesson);
+    }
+
+
 }

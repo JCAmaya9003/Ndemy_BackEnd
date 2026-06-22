@@ -55,6 +55,8 @@ public class User implements UserDetails {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;   // nullable; null = sin foto configurada
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -85,4 +87,6 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return isActive;
     }
+
+    
 }

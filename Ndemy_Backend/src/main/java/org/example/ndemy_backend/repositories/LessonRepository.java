@@ -22,4 +22,5 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
 
     @Query("SELECT MAX(l.orderIndex) FROM Lesson l WHERE l.module.id = :moduleId")
     Optional<Integer> findMaxOrderIndexByModuleId(@Param("moduleId") UUID moduleId);
+    boolean existsByModuleCoursIdAndInstructorId(UUID courseId, UUID instructorId);
 }
