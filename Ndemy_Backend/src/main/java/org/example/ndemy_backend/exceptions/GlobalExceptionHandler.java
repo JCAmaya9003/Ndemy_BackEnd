@@ -149,6 +149,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(CourseNotReadyException.class)
+    public ResponseEntity<ApiErrorResponse> handleCourseNotReadyException(CourseNotReadyException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     private ResponseEntity<ApiErrorResponse> buildErrorResponse(HttpStatus status, Object message) {
         String uri = ServletUriComponentsBuilder.fromCurrentRequestUri().build().getPath();
         return ResponseEntity
