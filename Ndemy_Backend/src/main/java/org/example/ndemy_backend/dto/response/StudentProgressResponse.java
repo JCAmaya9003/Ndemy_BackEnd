@@ -19,4 +19,6 @@ public class StudentProgressResponse {
     private Double progress;
     private Boolean isCompleted;
     private LocalDateTime enrolledAt;
+    private Boolean examPassed;
+    private Integer examAttemptsUsed;
 }
