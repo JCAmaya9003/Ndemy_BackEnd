@@ -30,4 +30,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
         LIMIT 5
         """)
     List<Object[]> findTop5CoursesByEnrollments();
+
+    int countByCourseIdAndIsActiveTrue(UUID courseId);
 }
