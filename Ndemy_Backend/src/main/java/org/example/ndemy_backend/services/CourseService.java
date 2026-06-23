@@ -14,8 +14,9 @@ public interface CourseService {
     CourseDetailResponse createCourse(CourseRequest request, UUID instructorId);
     Page<CourseSummaryResponse> getCourses(String category, BigDecimal minPrice, BigDecimal maxPrice,
                                            String search, Pageable pageable);
-    // studentId is included to decide if it needs to show contentUrl
-    CourseDetailResponse getCourseById(UUID courseId, UUID studentId);
+    // userId is used, it will decide if is instructor/admin or student
+    // if is student, later decides if it needs to show contentUrl
+    CourseDetailResponse getCourseById(UUID courseId, UUID userId);
     CourseDetailResponse updateCourse(UUID courseId, CourseRequest request, UUID instructorId);
     void deleteCourseById(UUID courseId, UUID instructorId);
     CourseDetailResponse publishCourse(UUID courseId, UUID instructorId);
