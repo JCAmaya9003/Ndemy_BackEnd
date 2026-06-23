@@ -29,8 +29,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new CourseNotPublishedException("Course is not published yet");
         }
 
-        if (enrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId)) {
-            throw new AlreadyEnrolledException("Student is already enrolled in this course");
+        Enrollment existing = enrollmentRepository
+                .findByStudentIdAndCourseId(studentId, courseId)
+                .orElse(null);
+
+        if (existing != null) {
+            // Ya tiene acceso activo → no puede inscribirse de nuevo
+            if (Boolean.TRUE.equals(existing.getIsActive())) {
+                throw new AlreadyEnrolledException("Student is already enrolled in this course");
+            }
+            // Inscripción previa desactivada (por reembolso) → la reactivamos
+            existing.setIsActive(true);
+            existing.setCompletedAt(null);
+            return toEnrollmentResponse(enrollmentRepository.save(existing));
         }
 
         Enrollment enrollment = Enrollment
