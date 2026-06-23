@@ -38,23 +38,28 @@ public class jwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
-        final String email = jwtService.extractEmail(token);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userRepository.findByEmail(email).orElse(null);
+        try {
+            final String email = jwtService.extractEmail(token);
 
-            if (user != null && jwtService.isTokenValid(token, user)
-                    && !jwtService.isRefreshToken(token)) {
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                User user = userRepository.findByEmail(email).orElse(null);
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user, null, user.getAuthorities()
-                        );
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                if (user != null && jwtService.isTokenValid(token, user)
+                        && !jwtService.isRefreshToken(token)) {
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    user, null, user.getAuthorities()
+                            );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // Token expirado, malformado o firma inválido no autenticamos y dejamos que la cadena responda 401/403.
+            SecurityContextHolder.clearContext();
         }
-
         filterChain.doFilter(request, response);
     }
 }

@@ -17,6 +17,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.example.ndemy_backend.exceptions.InvalidCredentialsException;
+import org.example.ndemy_backend.exceptions.EmailAlreadyExistsException;
+import org.example.ndemy_backend.exceptions.InvalidTokenException;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+                .orElseThrow(() -> new InvalidCredentialsException("Credenciales inválidas"));
 
         if (user.getIsLocked()) {
             throw new LockedException("La cuenta está bloqueada por demasiados intentos fallidos");
@@ -48,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
             );
         } catch (AuthenticationException ex) {
             handleFailedAttempt(user);
-            throw new RuntimeException("Credenciales inválidas");
+            throw new InvalidCredentialsException("Credenciales inválidas");
         }
 
         // Login exitoso: resetear intentos fallidos
@@ -61,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new EmailAlreadyExistsException("El email ya está registrado");
         }
 
         User user = User.builder()
@@ -79,15 +82,15 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(readOnly = true)
     public AuthResponse refreshToken(String refreshToken) {
         if (!jwtService.isRefreshToken(refreshToken)) {
-            throw new RuntimeException("Token inválido");
+            throw new InvalidTokenException("Token inválido");
         }
 
         String email = jwtService.extractEmail(refreshToken);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new InvalidTokenException("Usuario no encontrado"));
 
         if (!jwtService.isTokenValid(refreshToken, user)) {
-            throw new RuntimeException("Refresh token expirado");
+            throw new InvalidTokenException("Refresh token expirado");
         }
 
         return buildAuthResponse(user);
