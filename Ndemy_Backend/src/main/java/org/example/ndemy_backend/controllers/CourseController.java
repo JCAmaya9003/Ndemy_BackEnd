@@ -59,12 +59,12 @@ public class CourseController {
     public ResponseEntity<GeneralResponse> getCourseById(
             @PathVariable UUID id,
             @AuthenticationPrincipal User currentUser) {
-        UUID studentId = currentUser != null ? currentUser.getId() : null;
+        UUID userId = currentUser != null ? currentUser.getId() : null;
 
         return ResponseBuilder.buildResponse(
                 "Course found successfully",
                 HttpStatus.OK,
-                courseService.getCourseById(id, studentId)
+                courseService.getCourseById(id, userId)
         );
     }
 
