@@ -20,6 +20,8 @@ import org.example.ndemy_backend.services.CourseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.example.ndemy_backend.notifications.NotificationService;
+import org.example.ndemy_backend.repositories.WishlistItemRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,6 +36,8 @@ public class CourseServiceImpl implements CourseService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final ExamRepository examRepository;
+    private final WishlistItemRepository wishlistItemRepository;
+    private final NotificationService notificationService;
 
     @Override
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
@@ -123,8 +127,16 @@ public class CourseServiceImpl implements CourseService {
         }
 
         course.setIsPublished(true);
+        Course saved = courseRepository.save(course);
 
-        return toCourseDetailResponse(courseRepository.save(course));
+        // Notificar a los estudiantes que tienen este curso en su wishlist
+        wishlistItemRepository.findByCourseId(courseId).forEach(item ->
+                notificationService.notifyCoursePublished(
+                        item.getStudent().getEmail(),
+                        item.getStudent().getName(),
+                        saved.getTitle()));
+
+        return toCourseDetailResponse(saved);
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {

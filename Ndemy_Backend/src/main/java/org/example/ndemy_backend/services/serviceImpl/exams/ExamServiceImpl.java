@@ -24,6 +24,7 @@ import org.example.ndemy_backend.repositories.exams.QuestionRepository;
 import org.example.ndemy_backend.services.LessonProgressService;
 import org.example.ndemy_backend.services.exams.ExamService;
 import org.springframework.stereotype.Service;
+import org.example.ndemy_backend.notifications.NotificationService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -44,12 +45,12 @@ public class ExamServiceImpl implements ExamService {
     private final OptionRepository optionRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final LessonRepository lessonRepository;
     private final LessonProgressRepository lessonProgressRepository;
     private final CertificateRepository certificateRepository;
     private final UserRepository userRepository;
 
     private final LessonProgressService lessonProgressService;
+    private final NotificationService notificationService;
 
     @Override
     public ExamResponse createExam(UUID courseId, ExamRequest request, UUID instructorId) {
@@ -266,6 +267,12 @@ public class ExamServiceImpl implements ExamService {
                 .build();
 
         certificateRepository.save(certificate);
+
+        notificationService.notifyCertificateIssued(
+                student.getEmail(),
+                student.getName(),
+                course.getTitle(),
+                certificate.getCertificateCode());
     }
 
     private void resetCourse(UUID enrollmentId, UUID examId, UUID studentId) {
