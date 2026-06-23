@@ -39,6 +39,10 @@ public class CourseServiceImpl implements CourseService {
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
         User instructor = userRepository.findById(instructorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+        
+        if (instructor.getRole() != Role.INSTRUCTOR && instructor.getRole() != Role.ADMIN) {
+            throw new UnauthorizedException("Only instructors can create courses");
+        }
 
         Course course = Course
                 .builder()
