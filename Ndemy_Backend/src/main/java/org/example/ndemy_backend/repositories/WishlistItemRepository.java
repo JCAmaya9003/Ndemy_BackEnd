@@ -13,6 +13,8 @@ public interface WishlistItemRepository extends JpaRepository<WishlistItem, UUID
 
     List<WishlistItem> findByStudentId(UUID studentId);
 
+    List<WishlistItem> findByCourseId(UUID courseId);
+
     Optional<WishlistItem> findByStudentIdAndCourseId(UUID studentId, UUID courseId);
 
     boolean existsByStudentIdAndCourseId(UUID studentId, UUID courseId);
