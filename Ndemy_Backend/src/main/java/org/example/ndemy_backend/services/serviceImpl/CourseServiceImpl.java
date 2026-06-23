@@ -72,13 +72,26 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseDetailResponse getCourseById(UUID courseId, UUID studentId) {
+    public CourseDetailResponse getCourseById(UUID courseId, UUID userId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        boolean isEnrolled = enrollmentRepository.existsByStudentIdAndCourseId(studentId, courseId);
+        boolean isPrivileged = false;
 
-        return toCourseDetailResponse(course, isEnrolled);
+        if (userId != null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+            boolean isOwnerInstructor = course.getInstructor().getId().equals(userId);
+            boolean isAdmin = user.getRole() == Role.ADMIN;
+
+            isPrivileged = isOwnerInstructor || isAdmin;
+        }
+
+        boolean showContent = isPrivileged ||
+                (userId != null && enrollmentRepository.existsByStudentIdAndCourseIdAndIsActiveTrue(userId, courseId));
+
+        return toCourseDetailResponse(course, showContent);
     }
 
     @Override
@@ -170,12 +183,12 @@ public class CourseServiceImpl implements CourseService {
                 .build();
     }
 
-    private CourseDetailResponse toCourseDetailResponse(Course course, boolean isEnrolled) {
+    private CourseDetailResponse toCourseDetailResponse(Course course, boolean showContent) {
 
         List<ModuleResponse> modules = moduleRepository
                 .findByCourseIdOrderByOrderIndexAsc(course.getId())
                 .stream()
-                .map(m -> toModuleResponse(m, isEnrolled))
+                .map(m -> toModuleResponse(m, showContent))
                 .toList();
 
         return CourseDetailResponse.builder()
