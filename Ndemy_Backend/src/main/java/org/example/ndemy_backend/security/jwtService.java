@@ -25,6 +25,13 @@ public class jwtService {
     @Value("${jwt.refresh-expiration}")
     private long refreshTokenExpiration;
 
+    @jakarta.annotation.PostConstruct
+    void validateSecret() {
+        if (secretKey == null || secretKey.getBytes(java.nio.charset.StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres");
+        }
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
