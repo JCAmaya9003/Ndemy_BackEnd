@@ -8,6 +8,4 @@ import java.util.UUID;
 
 public interface ExamAttemptRepository extends JpaRepository<ExamAttempt, UUID> {
     Optional<ExamAttempt> findByStudentIdAndExamId(UUID studentId, UUID examId);
-    
-    boolean existsByStudentIdAndExamId(UUID studentId, UUID examId);
 }
