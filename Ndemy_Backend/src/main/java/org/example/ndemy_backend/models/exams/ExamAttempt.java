@@ -46,4 +46,7 @@ public class ExamAttempt {
     @CreationTimestamp
     @Column(name = "taken_at", nullable = false, updatable = false)
     private LocalDateTime takenAt;
+
+    @Column(name = "best_score", precision = 5, scale = 2)
+    private BigDecimal bestScore;
 }
