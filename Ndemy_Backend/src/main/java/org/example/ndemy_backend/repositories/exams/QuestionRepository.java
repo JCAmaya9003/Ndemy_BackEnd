@@ -18,6 +18,4 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
 
     @Query("SELECT MAX(q.orderIndex) FROM Question q WHERE q.exam.id = :examId")
     Optional<Integer> findMaxOrderIndexByExamId(@Param("examId") UUID examId);
-
-    int countByExamId(UUID examId);
 }

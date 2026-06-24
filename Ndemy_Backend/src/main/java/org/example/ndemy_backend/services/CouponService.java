@@ -18,13 +18,8 @@ public interface CouponService {
 
     void deactivateCoupon(UUID couponId, UUID requesterId, String requesterRole);
 
-    BigDecimal applyCoupon(String code, UUID userId, UUID courseId);
-
     Coupon validateAndGetCoupon(String code, UUID userId);
 
     BigDecimal calculateFinalPrice(BigDecimal originalPrice, Coupon coupon);
-
-
-
 }
 

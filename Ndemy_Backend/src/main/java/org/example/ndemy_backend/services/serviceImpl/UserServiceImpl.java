@@ -5,6 +5,8 @@ import org.example.ndemy_backend.dto.request.ChangePasswordRequest;
 import org.example.ndemy_backend.dto.request.UpdateProfileRequest;
 import org.example.ndemy_backend.dto.request.UpdateUserRequest;
 import org.example.ndemy_backend.dto.response.UserResponse;
+import org.example.ndemy_backend.exceptions.EmailAlreadyExistsException;
+import org.example.ndemy_backend.exceptions.InvalidCredentialsException;
 import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.models.User;
 import org.example.ndemy_backend.repositories.UserRepository;
@@ -51,7 +53,7 @@ public class UserServiceImpl implements UserService {
         if (request.getEmail() != null) {
             if (!request.getEmail().equals(user.getEmail())
                     && userRepository.existsByEmail(request.getEmail())) {
-                throw new RuntimeException("El email ya está en uso");
+                throw new EmailAlreadyExistsException("El email ya está en uso");
             }
             user.setEmail(request.getEmail());
         }
@@ -79,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
     private User findUserOrThrow(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
 
     // ── Perfil propio ─────────────────────────────────────────────────────
@@ -111,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
         // 1. Verificar que la contraseña actual sea correcta
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new BadCredentialsException("La contraseña actual es incorrecta");
+            throw new InvalidCredentialsException("La contraseña actual es incorrecta");
         }
 
         // 2. Guardar la nueva contraseña hasheada
