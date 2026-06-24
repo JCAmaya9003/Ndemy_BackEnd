@@ -144,7 +144,7 @@ public class LessonServiceImpl implements LessonService {
 
     @Override
     public boolean isInstructorOfCourse(UUID userId, UUID courseId) {
-        return lessonRepository.existsByModuleCoursIdAndInstructorId(courseId, userId);
+        return lessonRepository.existsByModuleCourseIdAndInstructorId(courseId, userId);
     }
 
     @Override
