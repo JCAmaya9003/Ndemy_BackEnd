@@ -12,15 +12,25 @@ import java.util.UUID;
 
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, UUID> {
+
     List<Lesson> findByModuleIdOrderByOrderIndexAsc(UUID moduleId);
 
     int countByModuleCourseId(UUID courseId);
 
     boolean existsByModuleIdAndOrderIndex(UUID moduleId, Integer orderIndex);
+
     List<Lesson> findByModuleIdAndOrderIndexGreaterThanEqual(UUID moduleId, Integer orderIndex);
+
     List<Lesson> findByModuleIdAndOrderIndexBetween(UUID moduleId, Integer start, Integer end);
 
     @Query("SELECT MAX(l.orderIndex) FROM Lesson l WHERE l.module.id = :moduleId")
     Optional<Integer> findMaxOrderIndexByModuleId(@Param("moduleId") UUID moduleId);
-    boolean existsByModuleCoursIdAndInstructorId(UUID courseId, UUID instructorId);
+
+    @Query("SELECT COUNT(l) > 0 FROM Lesson l " +
+            "WHERE l.module.course.id = :courseId " +
+            "AND l.module.course.instructor.id = :instructorId")
+    boolean existsByModuleCourseIdAndInstructorId(
+            @Param("courseId") UUID courseId,
+            @Param("instructorId") UUID instructorId
+    );
 }
