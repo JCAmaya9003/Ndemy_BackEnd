@@ -37,7 +37,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()                 // health check del hosting
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses/*").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/certificates/verify/*").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/coupons/**").hasAnyRole("INSTRUCTOR", "ADMIN")
                         .requestMatchers("/api/instructor/**").hasAnyRole("INSTRUCTOR", "ADMIN")

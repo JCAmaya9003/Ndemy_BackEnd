@@ -99,7 +99,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        verifyOwnership(course, instructorId);
+        verifyOwnerOrAdmin(course, instructorId);
 
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
@@ -115,16 +115,8 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourseById(UUID courseId, UUID instructorId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
-
-        User user = userRepository.findById(instructorId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         // only the course instructor or an admin can delete this course
-        if (!course.getInstructor().getId().equals(instructorId)
-                && user.getRole() != Role.ADMIN) {
-            throw new UnauthorizedException("You are not allowed to delete this course");
-        }
-
+        verifyOwnerOrAdmin(course, instructorId);
         courseRepository.delete(course);
     }
 
@@ -133,7 +125,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        verifyOwnership(course, instructorId);
+        verifyOwnerOrAdmin(course, instructorId);
 
         if (!examRepository.existsByCourseId(courseId)) {
             throw new CourseNotReadyException("Course must have an exam before publishing");
@@ -152,8 +144,11 @@ public class CourseServiceImpl implements CourseService {
         return toCourseDetailResponse(saved);
     }
 
-    private void verifyOwnership(Course course, UUID instructorId) {
-        if (!course.getInstructor().getId().equals(instructorId)) {
+    private void verifyOwnerOrAdmin(Course course, UUID userId) {
+        if (course.getInstructor().getId().equals(userId)) return;
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (user.getRole() != Role.ADMIN) {
             throw new UnauthorizedException("You are not allowed to modify this course");
         }
     }
