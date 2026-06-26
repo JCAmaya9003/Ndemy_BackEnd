@@ -220,6 +220,11 @@ public class ExamServiceImpl implements ExamService {
 
         // update attempt
         attempt.setScore(score);
+        attempt.setBestScore(
+                attempt.getBestScore() == null || score.compareTo(attempt.getBestScore()) > 0
+                        ? score
+                        : attempt.getBestScore()
+        );
         attempt.setPassed(passed);
         attempt.setAttempts(attempt.getAttempts() + 1);
         examAttemptRepository.save(attempt);

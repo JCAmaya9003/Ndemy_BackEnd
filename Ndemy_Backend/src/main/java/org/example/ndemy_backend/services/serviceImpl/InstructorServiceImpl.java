@@ -109,6 +109,7 @@ public class InstructorServiceImpl implements InstructorService {
 
         Boolean examPassed = null;
         Integer examAttemptsUsed = null;
+        BigDecimal bestScore = BigDecimal.ZERO;
 
         if (examOpt.isPresent()) {
             Optional<ExamAttempt> attempt = examAttemptRepository
@@ -116,6 +117,7 @@ public class InstructorServiceImpl implements InstructorService {
 
             examPassed = attempt.map(ExamAttempt::getPassed).orElse(false);
             examAttemptsUsed = attempt.map(ExamAttempt::getAttempts).orElse(0);
+            bestScore = attempt.map(ExamAttempt::getBestScore).orElse(null);
         }
 
         return StudentProgressResponse.builder()
@@ -127,6 +129,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .enrolledAt(enrollment.getEnrolledAt())
                 .examPassed(examPassed)
                 .examAttemptsUsed(examAttemptsUsed)
+                .bestScore(bestScore)
                 .build();
     }
 }

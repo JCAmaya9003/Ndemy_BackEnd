@@ -14,11 +14,9 @@ public interface CouponService {
 
     List<CouponDTO> getAllCoupons(UUID requesterId, String requesterRole);
 
-    CouponDTO updateCoupon(UUID couponId, CouponRequest request);
+    CouponDTO updateCoupon(UUID couponId, CouponRequest request, UUID requesterId, String requesterRole);
 
-    void deactivateCoupon(UUID couponId);
-
-    BigDecimal applyCoupon(String code, UUID userId, UUID courseId);
+    void deactivateCoupon(UUID couponId, UUID requesterId, String requesterRole);
 
     Coupon validateAndGetCoupon(String code, UUID userId);
 

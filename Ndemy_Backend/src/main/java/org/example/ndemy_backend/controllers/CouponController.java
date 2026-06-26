@@ -55,7 +55,7 @@ public class CouponController {
         return ResponseBuilder.buildResponse(
                 "Cupon actualizado correctamente",
                 HttpStatus.OK,
-                couponService.updateCoupon(id, request));
+                couponService.updateCoupon(id, request, currentUser.getId(), currentUser.getRole().name()));
     }
 
     // DELETE COUPON ADMIN E INSTRUCTOR
@@ -64,7 +64,7 @@ public class CouponController {
             @PathVariable UUID id,
             @AuthenticationPrincipal User currentUser) {
         requireAdminOrInstructor(currentUser);
-        couponService.deactivateCoupon(id);
+        couponService.deactivateCoupon(id, currentUser.getId(), currentUser.getRole().name());
         return ResponseBuilder.buildResponse(
                 "Cupon desactivado correctamente",
                 HttpStatus.OK,

@@ -62,30 +62,40 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
-    public CouponDTO updateCoupon(UUID couponId, CouponRequest request) {
+    public CouponDTO updateCoupon(UUID couponId, CouponRequest request, UUID requesterId, String requesterRole) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
 
+        verifyOwnerOrAdmin(coupon, requesterId, requesterRole);
+
         if (coupon.getCurrentUses() > 0) {
             throw new CouponNotEditableException("No se puede editar un cupón que ya tiene usos registrados");
+        }
+        // evita el 500 por código duplicado
+        if (!coupon.getCode().equals(request.getCode()) && couponRepository.existsByCode(request.getCode())) {
+            throw new DuplicateCouponCodeException("Ya existe un cupón con ese código");
         }
 
         coupon.setCode(request.getCode());
         coupon.setDiscountPercent(request.getDiscountPercent());
         coupon.setMaxUses(request.getMaxUses());
         coupon.setExpiresAt(request.getExpiresAt());
-
-        Coupon updated = couponRepository.save(coupon);
-        return mapToDTO(updated);
+        return mapToDTO(couponRepository.save(coupon));
     }
 
     @Override
-    public void deactivateCoupon(UUID couponId) {
+    public void deactivateCoupon(UUID couponId, UUID requesterId, String requesterRole) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cupón no encontrado"));
-
+        verifyOwnerOrAdmin(coupon, requesterId, requesterRole);
         coupon.setIsActive(false);
         couponRepository.save(coupon);
+    }
+
+    private void verifyOwnerOrAdmin(Coupon coupon, UUID requesterId, String requesterRole) {
+        if (!"ADMIN".equals(requesterRole) && !coupon.getCreatedBy().getId().equals(requesterId)) {
+            throw new UnauthorizedException("No tienes permiso para gestionar este cupón");
+        }
     }
 
     @Override
