@@ -27,4 +27,7 @@ public class CourseDetailResponse {
     private String instructorName;
     private LocalDateTime createdAt;
     private List<ModuleResponse> modules;
+    private Double rating;
+    private Integer totalStudents;
+    private Boolean isEnrolled;
 }

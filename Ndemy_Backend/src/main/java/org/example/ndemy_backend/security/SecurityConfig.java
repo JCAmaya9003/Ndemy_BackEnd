@@ -35,34 +35,33 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
+                        // Autenticación pública
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses/*").permitAll()
-                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/certificates/verify/*").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // Cursos: lectura pública (GET), escritura requiere auth
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses", "/api/courses/{id}").permitAll()
+
+                        // Solo ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/coupons/**").hasAnyRole("INSTRUCTOR", "ADMIN")
-                        .requestMatchers("/api/instructor/**").hasAnyRole("INSTRUCTOR", "ADMIN")
+
+                        // Perfil propio: cualquier usuario autenticado
+                        // (la regla anyRequest().authenticated() ya lo cubre,
+                        //  pero se declara explícito para mayor claridad)
                         .requestMatchers("/api/users/me/**").authenticated()
+
+                        // El resto de endpoints requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess ->
                         sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, e) -> writeError(res, 401, "No autenticado: token ausente o inválido"))
-                        .accessDeniedHandler((req, res, e) -> writeError(res, 403, "No tienes permiso para acceder a este recurso"))
-                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
-
-    private void writeError(jakarta.servlet.http.HttpServletResponse res, int status, String message)
-            throws java.io.IOException {
-        res.setStatus(status);
-        res.setContentType("application/json;charset=UTF-8");
-        res.getWriter().write("{\"status\":" + status + ",\"message\":\"" + message + "\"}");
     }
 
     @Bean

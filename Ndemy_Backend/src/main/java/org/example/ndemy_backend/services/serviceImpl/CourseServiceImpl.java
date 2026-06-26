@@ -38,12 +38,13 @@ public class CourseServiceImpl implements CourseService {
     private final ExamRepository examRepository;
     private final WishlistItemRepository wishlistItemRepository;
     private final NotificationService notificationService;
+    private final ReviewRepository reviewRepository;
 
     @Override
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
         User instructor = userRepository.findById(instructorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
-        
+
         if (instructor.getRole() != Role.INSTRUCTOR && instructor.getRole() != Role.ADMIN) {
             throw new UnauthorizedException("Only instructors can create courses");
         }
@@ -65,7 +66,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public Page<CourseSummaryResponse> getCourses(String category, BigDecimal minPrice, BigDecimal maxPrice,
-                                           String search, Pageable pageable) {
+                                                  String search, Pageable pageable) {
         return courseRepository
                 .findWithFilters(category, minPrice, maxPrice, search, pageable)
                 .map(this::toCourseSummaryResponse);
@@ -77,6 +78,7 @@ public class CourseServiceImpl implements CourseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
         boolean isPrivileged = false;
+        boolean isEnrolled = false;
 
         if (userId != null) {
             User user = userRepository.findById(userId)
@@ -86,12 +88,12 @@ public class CourseServiceImpl implements CourseService {
             boolean isAdmin = user.getRole() == Role.ADMIN;
 
             isPrivileged = isOwnerInstructor || isAdmin;
+            isEnrolled = enrollmentRepository.existsByStudentIdAndCourseIdAndIsActiveTrue(userId, courseId);
         }
 
-        boolean showContent = isPrivileged ||
-                (userId != null && enrollmentRepository.existsByStudentIdAndCourseIdAndIsActiveTrue(userId, courseId));
+        boolean showContent = isPrivileged || isEnrolled;
 
-        return toCourseDetailResponse(course, showContent);
+        return toCourseDetailResponse(course, showContent, isEnrolled);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        verifyOwnerOrAdmin(course, instructorId);
+        verifyOwnership(course, instructorId);
 
         course.setTitle(request.getTitle());
         course.setDescription(request.getDescription());
@@ -115,8 +117,16 @@ public class CourseServiceImpl implements CourseService {
     public void deleteCourseById(UUID courseId, UUID instructorId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        User user = userRepository.findById(instructorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         // only the course instructor or an admin can delete this course
-        verifyOwnerOrAdmin(course, instructorId);
+        if (!course.getInstructor().getId().equals(instructorId)
+                && user.getRole() != Role.ADMIN) {
+            throw new UnauthorizedException("You are not allowed to delete this course");
+        }
+
         courseRepository.delete(course);
     }
 
@@ -125,7 +135,7 @@ public class CourseServiceImpl implements CourseService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        verifyOwnerOrAdmin(course, instructorId);
+        verifyOwnership(course, instructorId);
 
         if (!examRepository.existsByCourseId(courseId)) {
             throw new CourseNotReadyException("Course must have an exam before publishing");
@@ -144,11 +154,8 @@ public class CourseServiceImpl implements CourseService {
         return toCourseDetailResponse(saved);
     }
 
-    private void verifyOwnerOrAdmin(Course course, UUID userId) {
-        if (course.getInstructor().getId().equals(userId)) return;
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        if (user.getRole() != Role.ADMIN) {
+    private void verifyOwnership(Course course, UUID instructorId) {
+        if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this course");
         }
     }
@@ -178,7 +185,9 @@ public class CourseServiceImpl implements CourseService {
                 .build();
     }
 
-    private CourseDetailResponse toCourseDetailResponse(Course course, boolean showContent) {
+    private CourseDetailResponse toCourseDetailResponse(Course course, boolean showContent, boolean isEnrolled) {
+        Double rating = reviewRepository.findAverageRatingByCourseId(course.getId()).orElse(0.0);
+        int totalStudents = enrollmentRepository.countByCourseIdAndIsActiveTrue(course.getId());
 
         List<ModuleResponse> modules = moduleRepository
                 .findByCourseIdOrderByOrderIndexAsc(course.getId())
@@ -198,6 +207,9 @@ public class CourseServiceImpl implements CourseService {
                 .instructorName(course.getInstructor().getName())
                 .createdAt(course.getCreatedAt())
                 .modules(modules)
+                .rating(Math.round(rating * 10.0) / 10.0)
+                .totalStudents(totalStudents)
+                .isEnrolled(isEnrolled)
                 .build();
     }
 
@@ -225,13 +237,23 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private CourseSummaryResponse toCourseSummaryResponse(Course course) {
+        Double rating = reviewRepository
+                .findAverageRatingByCourseId(course.getId())
+                .orElse(0.0);
+        int totalStudents = enrollmentRepository
+                .countByCourseIdAndIsActiveTrue(course.getId());
+
         return CourseSummaryResponse.builder()
                 .id(course.getId())
                 .title(course.getTitle())
+                .description(course.getDescription())
                 .price(course.getPrice())
                 .category(course.getCategory())
+                .durationHours(course.getDurationHours())
                 .instructorName(course.getInstructor().getName())
                 .thumbnailUrl(course.getThumbnailUrl())
+                .rating(Math.round(rating * 10.0) / 10.0)
+                .totalStudents(totalStudents)
                 .build();
     }
 }

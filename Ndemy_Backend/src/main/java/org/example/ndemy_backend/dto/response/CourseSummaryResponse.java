@@ -15,8 +15,12 @@ import java.util.UUID;
 public class CourseSummaryResponse {
     private UUID id;
     private String title;
+    private String description;
     private BigDecimal price;
     private String category;
+    private Integer durationHours;
     private String instructorName;
     private String thumbnailUrl;
+    private Double rating;
+    private Integer totalStudents;
 }
