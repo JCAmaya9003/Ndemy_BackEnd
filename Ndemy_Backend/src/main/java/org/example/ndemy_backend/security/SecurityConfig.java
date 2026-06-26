@@ -43,6 +43,9 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
+                        // Cursos: lectura pública (GET), escritura requiere auth
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses", "/api/courses/{id}").permitAll()
+
                         // Solo ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
