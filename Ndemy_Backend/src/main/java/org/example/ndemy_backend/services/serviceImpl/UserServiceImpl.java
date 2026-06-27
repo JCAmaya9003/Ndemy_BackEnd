@@ -72,6 +72,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public void lockUser(UUID id) {
+        User user = findUserOrThrow(id);
+        userRepository.lockAccount(user.getEmail());
+    }
+
+    @Override
+    @Transactional
     public void unlockUser(UUID id) {
         User user = findUserOrThrow(id);
         userRepository.resetFailedLoginAttempts(user.getEmail());

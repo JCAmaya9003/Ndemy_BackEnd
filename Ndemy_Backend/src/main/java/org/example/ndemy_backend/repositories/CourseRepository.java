@@ -19,7 +19,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     @Query("""
         SELECT c FROM Course c
         WHERE c.isPublished = true
-        AND (:category IS NULL OR c.category = :category)
+        AND (:category IS NULL OR LOWER(TRIM(c.category)) = LOWER(TRIM(:category)))
         AND (:minPrice IS NULL OR c.price >= :minPrice)
         AND (:maxPrice IS NULL OR c.price <= :maxPrice)
         AND (:search IS NULL OR

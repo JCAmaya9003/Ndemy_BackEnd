@@ -3,6 +3,7 @@ package org.example.ndemy_backend.services.serviceImpl;
 import lombok.RequiredArgsConstructor;
 import org.example.ndemy_backend.dto.request.CouponRequest;
 import org.example.ndemy_backend.dto.response.CouponDTO;
+import org.example.ndemy_backend.dto.response.CouponPreviewResponse;
 import org.example.ndemy_backend.exceptions.*;
 import org.example.ndemy_backend.models.Coupon;
 import org.example.ndemy_backend.models.Course;
@@ -94,6 +95,26 @@ public class CouponServiceImpl implements CouponService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
         return calculateFinalPrice(course.getPrice(), coupon);
+    }
+
+    @Override
+    public CouponPreviewResponse previewCoupon(String code, UUID userId, UUID courseId) {
+        Coupon coupon = validateAndGetCoupon(code, userId);
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Curso no encontrado"));
+
+        BigDecimal originalPrice = course.getPrice();
+        BigDecimal finalPrice = calculateFinalPrice(originalPrice, coupon);
+        BigDecimal discountAmount = originalPrice.subtract(finalPrice)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        return CouponPreviewResponse.builder()
+                .code(coupon.getCode())
+                .discountPercent(coupon.getDiscountPercent())
+                .originalPrice(originalPrice)
+                .discountAmount(discountAmount)
+                .finalPrice(finalPrice)
+                .build();
     }
 
     @Override
