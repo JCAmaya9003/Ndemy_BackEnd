@@ -24,5 +24,7 @@ public interface CouponService {
     Coupon validateAndGetCoupon(String code, UUID userId);
 
     BigDecimal calculateFinalPrice(BigDecimal originalPrice, Coupon coupon);
+
+    BigDecimal applyCoupon(String code, UUID userId, UUID courseId);
 }
 
