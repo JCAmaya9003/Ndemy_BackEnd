@@ -33,3 +33,6 @@ jwt:
 
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+
+server:
+  port: ${PORT:8080}
