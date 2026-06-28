@@ -46,6 +46,16 @@ public class UserController {
                 .build());
     }
 
+    @PutMapping("/{id}/lock")
+    public ResponseEntity<GeneralResponse> lockUser(@PathVariable UUID id) {
+        userService.lockUser(id);
+        return ResponseEntity.ok(GeneralResponse.builder()
+                .message("Usuario baneado correctamente")
+                .status(200)
+                .time(LocalDateTime.now())
+                .build());
+    }
+
     @PutMapping("/{id}/unlock")
     public ResponseEntity<GeneralResponse> unlockUser(@PathVariable UUID id) {
         userService.unlockUser(id);

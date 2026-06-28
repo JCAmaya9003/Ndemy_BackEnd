@@ -1,6 +1,5 @@
 package org.example.ndemy_backend.dto.response;
 
-import jdk.jfr.Category;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,9 +24,11 @@ public class CourseDetailResponse {
     private String thumbnailUrl;
     private Boolean isPublished;
     private String instructorName;
+    private UUID instructorId;
     private LocalDateTime createdAt;
     private List<ModuleResponse> modules;
     private Double rating;
     private Integer totalStudents;
     private Boolean isEnrolled;
+    private Boolean hasExam;
 }

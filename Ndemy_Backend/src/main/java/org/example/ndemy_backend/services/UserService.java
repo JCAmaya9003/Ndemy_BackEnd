@@ -13,6 +13,7 @@ public interface UserService {
     UserResponse getUserById(UUID id);
     UserResponse updateUser(UUID id, UpdateUserRequest request);
     void deactivateUser(UUID id);
+    void lockUser(UUID id);
     void unlockUser(UUID id);
 
     // ── Perfil propio (cualquier usuario autenticado) ─────────────────────

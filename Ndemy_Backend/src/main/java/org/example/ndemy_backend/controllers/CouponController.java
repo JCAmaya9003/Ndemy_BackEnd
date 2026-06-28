@@ -71,6 +71,19 @@ public class CouponController {
                 null);
     }
 
+    // GET PREVIEW: cualquier usuario autenticado puede validar un cupón
+    // y ver el precio con descuento antes de pagar
+    @GetMapping("/preview")
+    public ResponseEntity<GeneralResponse> previewCoupon(
+            @RequestParam String code,
+            @RequestParam UUID courseId,
+            @AuthenticationPrincipal User currentUser) {
+        return ResponseBuilder.buildResponse(
+                "Cupon válido",
+                HttpStatus.OK,
+                couponService.previewCoupon(code, currentUser.getId(), courseId));
+    }
+
     private void requireAdminOrInstructor(User user) {
         if (user.getRole() != Role.ADMIN && user.getRole() != Role.INSTRUCTOR) {
             throw new UnauthorizedException("No tienes permiso para gestionar cupones");

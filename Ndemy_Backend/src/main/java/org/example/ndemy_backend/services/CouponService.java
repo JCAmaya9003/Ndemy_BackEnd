@@ -2,6 +2,7 @@ package org.example.ndemy_backend.services;
 
 import org.example.ndemy_backend.dto.request.CouponRequest;
 import org.example.ndemy_backend.dto.response.CouponDTO;
+import org.example.ndemy_backend.dto.response.CouponPreviewResponse;
 import org.example.ndemy_backend.models.Coupon;
 
 import java.math.BigDecimal;
@@ -17,6 +18,8 @@ public interface CouponService {
     CouponDTO updateCoupon(UUID couponId, CouponRequest request, UUID requesterId, String requesterRole);
 
     void deactivateCoupon(UUID couponId, UUID requesterId, String requesterRole);
+
+    CouponPreviewResponse previewCoupon(String code, UUID userId, UUID courseId);
 
     Coupon validateAndGetCoupon(String code, UUID userId);
 

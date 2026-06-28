@@ -205,11 +205,13 @@ public class CourseServiceImpl implements CourseService {
                 .thumbnailUrl(course.getThumbnailUrl())
                 .isPublished(course.getIsPublished())
                 .instructorName(course.getInstructor().getName())
+                .instructorId(course.getInstructor().getId())
                 .createdAt(course.getCreatedAt())
                 .modules(modules)
                 .rating(Math.round(rating * 10.0) / 10.0)
                 .totalStudents(totalStudents)
                 .isEnrolled(isEnrolled)
+                .hasExam(examRepository.existsByCourseId(course.getId()))
                 .build();
     }
 
@@ -231,8 +233,10 @@ public class CourseServiceImpl implements CourseService {
                 .thumbnailUrl(course.getThumbnailUrl())
                 .isPublished(course.getIsPublished())
                 .instructorName(course.getInstructor().getName())
+                .instructorId(course.getInstructor().getId())
                 .createdAt(course.getCreatedAt())
                 .modules(modules)
+                .hasExam(examRepository.existsByCourseId(course.getId()))
                 .build();
     }
 
