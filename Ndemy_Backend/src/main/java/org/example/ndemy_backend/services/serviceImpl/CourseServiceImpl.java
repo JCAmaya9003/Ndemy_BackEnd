@@ -20,6 +20,9 @@ import org.example.ndemy_backend.services.CourseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.example.ndemy_backend.notifications.NotificationService;
 import org.example.ndemy_backend.repositories.WishlistItemRepository;
 
@@ -39,6 +42,9 @@ public class CourseServiceImpl implements CourseService {
     private final WishlistItemRepository wishlistItemRepository;
     private final NotificationService notificationService;
     private final ReviewRepository reviewRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public CourseDetailResponse createCourse(CourseRequest request, UUID instructorId) {
@@ -114,6 +120,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional
     public void deleteCourseById(UUID courseId, UUID instructorId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
@@ -126,6 +133,37 @@ public class CourseServiceImpl implements CourseService {
                 && user.getRole() != Role.ADMIN) {
             throw new UnauthorizedException("You are not allowed to delete this course");
         }
+
+        // Borra dependencias sin ON DELETE CASCADE, en orden seguro.
+        entityManager.createQuery(
+                "DELETE FROM LessonProgress lp WHERE lp.enrollment.id IN " +
+                "(SELECT e.id FROM Enrollment e WHERE e.course.id = :cid)")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery(
+                "DELETE FROM ExamAttempt ea WHERE ea.exam.id IN " +
+                "(SELECT ex.id FROM Exam ex WHERE ex.course.id = :cid)")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM Enrollment e WHERE e.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM CouponUsage cu WHERE cu.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM PaymentRecord p WHERE p.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM Certificate c WHERE c.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM Review r WHERE r.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.createQuery("DELETE FROM WishlistItem w WHERE w.course.id = :cid")
+                .setParameter("cid", courseId).executeUpdate();
+
+        entityManager.flush();
 
         courseRepository.delete(course);
     }
@@ -155,11 +193,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
-        boolean isOwner = course.getInstructor().getId().equals(instructorId);
-        boolean isAdmin = userRepository.findById(instructorId)
-                .map(u -> u.getRole() == Role.ADMIN)
-                .orElse(false);
-        if (!isOwner && !isAdmin) {
+        if (!course.getInstructor().getId().equals(instructorId)) {
             throw new UnauthorizedException("You are not allowed to modify this course");
         }
     }
