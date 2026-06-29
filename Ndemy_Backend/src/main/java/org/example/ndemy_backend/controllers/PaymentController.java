@@ -37,6 +37,19 @@ public class PaymentController {
                 paymentService.checkout(currentUser.getId(), request));
     }
 
+    // GET PAGOS DEL ESTUDIANTE (para reembolso/desinscripcion)
+    @GetMapping("/me")
+    public ResponseEntity<GeneralResponse> getMyPayments(
+            @AuthenticationPrincipal User currentUser) {
+        if (currentUser.getRole() != Role.STUDENT) {
+            throw new UnauthorizedException("Solo los estudiantes pueden ver sus pagos");
+        }
+        return ResponseBuilder.buildResponse(
+                "Pagos obtenidos correctamente",
+                HttpStatus.OK,
+                paymentService.getMyPayments(currentUser.getId()));
+    }
+
     // POST REFUND STUDENT
     @PostMapping("/{id}/refund")
     public ResponseEntity<GeneralResponse> refund(
