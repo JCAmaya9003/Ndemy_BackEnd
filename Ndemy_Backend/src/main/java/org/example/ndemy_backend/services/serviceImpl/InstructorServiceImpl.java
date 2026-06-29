@@ -8,12 +8,14 @@ import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Enrollment;
 import org.example.ndemy_backend.models.User;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.models.exams.Exam;
 import org.example.ndemy_backend.models.exams.ExamAttempt;
 import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.EnrollmentRepository;
 import org.example.ndemy_backend.repositories.PaymentRepository;
 import org.example.ndemy_backend.repositories.ReviewRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.repositories.exams.ExamAttemptRepository;
 import org.example.ndemy_backend.repositories.exams.ExamRepository;
 import org.example.ndemy_backend.services.InstructorService;
@@ -37,12 +39,19 @@ public class InstructorServiceImpl implements InstructorService {
     private final PaymentRepository paymentRepository;
     private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
+    private final UserRepository userRepository;
 
     private final LessonProgressService lessonProgressService;
 
     @Override
     public List<CourseStatsResponse> getInstructorCourses(UUID instructorId) {
-        List<Course> courses = courseRepository.findByInstructorId(instructorId);
+        User user = userRepository.findById(instructorId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // El admin puede gestionar todos los cursos; el instructor solo los suyos
+        List<Course> courses = user.getRole() == Role.ADMIN
+                ? courseRepository.findAll()
+                : courseRepository.findByInstructorId(instructorId);
 
         Map<UUID, BigDecimal> revenueByCourse = paymentRepository
                 .findCourseRevenueByInstructor(instructorId)

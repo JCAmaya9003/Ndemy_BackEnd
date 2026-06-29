@@ -8,8 +8,10 @@ import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Lesson;
 import org.example.ndemy_backend.models.Module;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.LessonRepository;
 import org.example.ndemy_backend.repositories.ModuleRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.LessonService;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import static org.example.ndemy_backend.utils.OrderIndexUtil.resolveOrderIndex;
 public class LessonServiceImpl implements LessonService {
     private final LessonRepository lessonRepository;
     private final ModuleRepository moduleRepository;
+    private final UserRepository userRepository;
 
     public LessonResponse createLesson(UUID moduleId, LessonRequest request, UUID instructorId) {
         Module module = moduleRepository.findById(moduleId)
@@ -41,7 +44,7 @@ public class LessonServiceImpl implements LessonService {
             List<Lesson> toShift = lessonRepository
                     .findByModuleIdAndOrderIndexGreaterThanEqual(moduleId, targetIndex);
             toShift.forEach(l -> l.setOrderIndex(l.getOrderIndex() + 1));
-            
+
             lessonRepository.saveAll(toShift);
         }
 
@@ -110,7 +113,11 @@ public class LessonServiceImpl implements LessonService {
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
-        if (!course.getInstructor().getId().equals(instructorId)) {
+        boolean isOwner = course.getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this lesson");
         }
     }

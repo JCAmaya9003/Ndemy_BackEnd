@@ -7,8 +7,10 @@ import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.Course;
 import org.example.ndemy_backend.models.Module;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.CourseRepository;
 import org.example.ndemy_backend.repositories.ModuleRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.ModuleService;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import static org.example.ndemy_backend.utils.OrderIndexUtil.resolveOrderIndex;
 public class ModuleServiceImpl implements ModuleService {
     private final ModuleRepository moduleRepository;
     private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
     @Override
     public ModuleResponse createModule(UUID courseId, ModuleRequest request, UUID instructorId) {
@@ -45,7 +48,7 @@ public class ModuleServiceImpl implements ModuleService {
 
             moduleRepository.saveAll(toShift);
         }
-        
+
         Module module = Module
                 .builder()
                 .title(request.getTitle())
@@ -111,7 +114,11 @@ public class ModuleServiceImpl implements ModuleService {
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
-        if(!course.getInstructor().getId().equals(instructorId)){
+        boolean isOwner = course.getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this course");
         }
     }

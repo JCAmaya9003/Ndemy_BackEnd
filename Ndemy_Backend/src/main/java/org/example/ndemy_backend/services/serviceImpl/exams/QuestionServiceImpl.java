@@ -7,8 +7,10 @@ import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.exams.Exam;
 import org.example.ndemy_backend.models.exams.Question;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.exams.ExamRepository;
 import org.example.ndemy_backend.repositories.exams.QuestionRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.exams.QuestionService;
 import org.example.ndemy_backend.utils.OrderIndexUtil;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
+    private final UserRepository userRepository;
 
     @Override
     public QuestionResponse createQuestion(UUID examId, QuestionRequest request, UUID instructorId) {
@@ -106,7 +109,11 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void verifyOwnership(Exam exam, UUID instructorId) {
-        if (!exam.getCourse().getInstructor().getId().equals(instructorId)) {
+        boolean isOwner = exam.getCourse().getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this question");
         }
     }

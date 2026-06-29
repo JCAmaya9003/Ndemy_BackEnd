@@ -155,7 +155,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
-        if (!course.getInstructor().getId().equals(instructorId)) {
+        boolean isOwner = course.getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this course");
         }
     }

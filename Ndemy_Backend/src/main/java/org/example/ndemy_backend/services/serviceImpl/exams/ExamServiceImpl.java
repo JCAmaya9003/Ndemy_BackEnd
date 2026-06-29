@@ -214,7 +214,7 @@ public class ExamServiceImpl implements ExamService {
         // calculate score percentage
         BigDecimal score = questions.isEmpty() ? BigDecimal.ZERO :
                 BigDecimal.valueOf((correct * 100.0) / questions.size())
-                .setScale(2, RoundingMode.HALF_UP);
+                        .setScale(2, RoundingMode.HALF_UP);
 
         boolean passed = score.compareTo(BigDecimal.valueOf(exam.getPassingScore())) >= 0;
 
@@ -254,7 +254,11 @@ public class ExamServiceImpl implements ExamService {
     }
 
     private void verifyOwnership(Course course, UUID instructorId) {
-        if (!course.getInstructor().getId().equals(instructorId)) {
+        boolean isOwner = course.getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this exam");
         }
     }

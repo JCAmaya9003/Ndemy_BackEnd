@@ -8,8 +8,10 @@ import org.example.ndemy_backend.exceptions.ResourceNotFoundException;
 import org.example.ndemy_backend.exceptions.UnauthorizedException;
 import org.example.ndemy_backend.models.exams.Option;
 import org.example.ndemy_backend.models.exams.Question;
+import org.example.ndemy_backend.models.enums.Role;
 import org.example.ndemy_backend.repositories.exams.OptionRepository;
 import org.example.ndemy_backend.repositories.exams.QuestionRepository;
+import org.example.ndemy_backend.repositories.UserRepository;
 import org.example.ndemy_backend.services.exams.OptionService;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ public class OptionServiceImpl implements OptionService {
 
     private final OptionRepository optionRepository;
     private final QuestionRepository questionRepository;
+    private final UserRepository userRepository;
 
     @Override
     public OptionResponse createOption(UUID questionId, OptionRequest request, UUID instructorId) {
@@ -78,7 +81,11 @@ public class OptionServiceImpl implements OptionService {
     }
 
     private void verifyOwnership(Question question, UUID instructorId) {
-        if (!question.getExam().getCourse().getInstructor().getId().equals(instructorId)) {
+        boolean isOwner = question.getExam().getCourse().getInstructor().getId().equals(instructorId);
+        boolean isAdmin = userRepository.findById(instructorId)
+                .map(u -> u.getRole() == Role.ADMIN)
+                .orElse(false);
+        if (!isOwner && !isAdmin) {
             throw new UnauthorizedException("You are not allowed to modify this option");
         }
     }
