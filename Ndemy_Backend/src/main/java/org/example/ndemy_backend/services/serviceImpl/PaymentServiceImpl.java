@@ -110,6 +110,15 @@ public class PaymentServiceImpl implements PaymentService {
         return mapToDTO(saved);
     }
 
+    @Override
+    @Transactional
+    public List<PaymentDTO> getMyPayments(UUID studentId) {
+        return paymentRepository.findByStudentId(studentId)
+                .stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
     private PaymentDTO mapToDTO(PaymentRecord payment) {
         return PaymentDTO.builder()
                 .id(payment.getId())
